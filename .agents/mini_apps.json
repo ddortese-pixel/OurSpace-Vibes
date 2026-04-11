@@ -19,6 +19,9 @@
     },
     "AppStoreReadiness": {
       "title": "AppStoreReadiness"
+    },
+    "OurSpaceOnboarding": {
+      "title": "OurSpaceOnboarding"
     }
   }
 }
