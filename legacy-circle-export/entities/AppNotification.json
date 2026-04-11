@@ -1,0 +1,1 @@
+{"entity":"AppNotification","description":"In-app notifications for users","fields":{"recipient_email":"string","title":"string","body":"string","emoji":"string","type":"string","action_path":"string","read":"boolean","target_profile_id":"string"},"auto_fields":["id","created_date","updated_date","created_by"]}

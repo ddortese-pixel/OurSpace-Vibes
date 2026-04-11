@@ -1,0 +1,31 @@
+{
+  "entity": "LearnerProfile",
+  "description": "Core learner data including XP, badges, streaks, and preferences",
+  "fields": {
+    "display_name": "string",
+    "age": "number",
+    "age_mode": "string",
+    "chosen_guide": "string",
+    "xp": "number",
+    "shield_points": "number",
+    "legacy_level": "number",
+    "streak_days": "number",
+    "last_active_date": "date",
+    "badges_earned": "array",
+    "equipped_frame": "string",
+    "equipped_emoji": "string",
+    "strengths": "array",
+    "growth_areas": "array",
+    "completed_missions": "array",
+    "story_choices": "object",
+    "glow_moments": "array",
+    "parent_email": "string",
+    "notify_level_up": "boolean",
+    "notify_mission": "boolean",
+    "notify_badge": "boolean",
+    "notify_streak": "boolean",
+    "daily_limit_minutes": "number",
+    "mission_boost_expiry": "date"
+  },
+  "auto_fields": ["id", "created_date", "updated_date", "created_by"]
+}

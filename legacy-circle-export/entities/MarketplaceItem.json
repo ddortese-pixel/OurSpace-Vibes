@@ -1,0 +1,16 @@
+{
+  "entity": "MarketplaceItem",
+  "description": "Items available in the in-app marketplace",
+  "fields": {
+    "name": "string",
+    "description": "string",
+    "category": "string",
+    "cost_type": "string",
+    "cost": "number",
+    "image_url": "string",
+    "character_affinity": "string",
+    "rarity": "string",
+    "required_level": "number"
+  },
+  "auto_fields": ["id", "created_date", "updated_date", "created_by"]
+}

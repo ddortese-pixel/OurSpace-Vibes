@@ -1,0 +1,15 @@
+{
+  "entity": "StoryProgress",
+  "description": "Tracks learner progress through story episodes",
+  "fields": {
+    "learner_profile_id": "string",
+    "episode_id": "string",
+    "character": "string",
+    "choices_made": "array",
+    "completed": "boolean",
+    "glow_moment_reached": "boolean",
+    "xp_earned": "number",
+    "shield_points_earned": "number"
+  },
+  "auto_fields": ["id", "created_date", "updated_date", "created_by"]
+}

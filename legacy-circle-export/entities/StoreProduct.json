@@ -1,0 +1,19 @@
+{
+  "entity": "StoreProduct",
+  "description": "Products available in the store",
+  "fields": {
+    "title": "string",
+    "description": "string",
+    "product_type": "string",
+    "price_usd": "number",
+    "image_url": "string",
+    "file_url": "string",
+    "preview_url": "string",
+    "tags": "array",
+    "featured": "boolean",
+    "available": "boolean",
+    "coming_soon": "boolean",
+    "sort_order": "number"
+  },
+  "auto_fields": ["id", "created_date", "updated_date", "created_by"]
+}

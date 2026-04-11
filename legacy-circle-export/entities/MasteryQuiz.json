@@ -1,0 +1,16 @@
+{
+  "entity": "MasteryQuiz",
+  "description": "Quiz results and competency tracking",
+  "fields": {
+    "learner_profile_id": "string",
+    "character": "string",
+    "story_id": "string",
+    "score": "number",
+    "total_questions": "number",
+    "passed": "boolean",
+    "xp_earned": "number",
+    "competency_mastered": "string",
+    "attempts": "number"
+  },
+  "auto_fields": ["id", "created_date", "updated_date", "created_by"]
+}

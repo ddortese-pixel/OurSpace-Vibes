@@ -1,0 +1,1 @@
+{"entity":"PurchasedItem","description":"Items purchased by learners","fields":{"learner_profile_id":"string","item_id":"string","item_name":"string","item_category":"string","equipped":"boolean"},"auto_fields":["id","created_date","updated_date","created_by"]}

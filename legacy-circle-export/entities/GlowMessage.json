@@ -1,0 +1,16 @@
+{
+  "entity": "GlowMessage",
+  "description": "Peer-to-peer encouragement messages between learners",
+  "fields": {
+    "sender_profile_id": "string",
+    "sender_name": "string",
+    "recipient_profile_id": "string",
+    "recipient_name": "string",
+    "competency": "string",
+    "sticker": "string",
+    "tip": "string",
+    "status": "string",
+    "read": "boolean"
+  },
+  "auto_fields": ["id", "created_date", "updated_date", "created_by"]
+}

@@ -1,0 +1,19 @@
+{
+  "entity": "SeasonalEvent",
+  "description": "Seasonal events and community goals",
+  "fields": {
+    "title": "string",
+    "description": "string",
+    "emoji": "string",
+    "color": "string",
+    "start_date": "date",
+    "end_date": "date",
+    "goal_total": "number",
+    "current_progress": "number",
+    "reward_item_name": "string",
+    "reward_emoji": "string",
+    "tasks": "array",
+    "active": "boolean"
+  },
+  "auto_fields": ["id", "created_date", "updated_date", "created_by"]
+}

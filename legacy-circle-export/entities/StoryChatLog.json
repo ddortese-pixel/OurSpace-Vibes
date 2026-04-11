@@ -1,0 +1,1 @@
+{"entity":"StoryChatLog","description":"AI character chat session logs","fields":{"learner_profile_id":"string","learner_name":"string","character":"string","story_title":"string","scene_index":"number","question":"string","hint_response":"string","theme":"string"},"auto_fields":["id","created_date","updated_date","created_by"]}

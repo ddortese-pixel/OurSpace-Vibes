@@ -1,0 +1,14 @@
+{
+  "entity": "WeeklyChallenge",
+  "description": "Weekly challenge tracking and rewards",
+  "fields": {
+    "learner_profile_id": "string",
+    "week_key": "string",
+    "completed_tasks": "array",
+    "badge_earned": "string",
+    "xp_multiplier_active": "boolean",
+    "xp_multiplier_expiry": "date",
+    "xp_bonus_awarded": "boolean"
+  },
+  "auto_fields": ["id", "created_date", "updated_date", "created_by"]
+}

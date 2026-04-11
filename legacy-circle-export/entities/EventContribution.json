@@ -1,0 +1,1 @@
+{"entity":"EventContribution","description":"Individual contributions to seasonal events","fields":{"event_id":"string","learner_profile_id":"string","task_id":"string","task_label":"string","contribution_value":"number","xp_earned":"number"},"auto_fields":["id","created_date","updated_date","created_by"]}

@@ -1,0 +1,1 @@
+{"entity":"StoryFeed","description":"Community story feed posts","fields":{"author_profile_id":"string","author_name":"string","character_voice":"string","title":"string","content":"string","theme":"string","status":"string","reactions":"object","replies_count":"number","featured":"boolean"},"auto_fields":["id","created_date","updated_date","created_by"]}

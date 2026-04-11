@@ -1,0 +1,16 @@
+{
+  "entity": "CharacterInterview",
+  "description": "AI character interview sessions",
+  "fields": {
+    "learner_profile_id": "string",
+    "character": "string",
+    "session_id": "string",
+    "interview_type": "string",
+    "user_questions": "array",
+    "character_responses": "array",
+    "story_impact": "string",
+    "unlocked_content": "array",
+    "xp_earned": "number"
+  },
+  "auto_fields": ["id", "created_date", "updated_date", "created_by"]
+}

@@ -1,0 +1,1 @@
+{"entity":"StoryFeedReply","description":"Replies to story feed posts","fields":{"story_feed_id":"string","author_profile_id":"string","author_name":"string","content":"string","character_voice":"string","status":"string"},"auto_fields":["id","created_date","updated_date","created_by"]}

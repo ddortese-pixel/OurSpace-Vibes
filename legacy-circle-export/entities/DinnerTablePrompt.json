@@ -1,0 +1,1 @@
+{"entity":"DinnerTablePrompt","description":"Daily family conversation prompts","fields":{"learner_profile_id":"string","date":"date","completed_missions":"array","prompts":"array","xp_earned_today":"number","story_themes":"array","sent":"boolean"},"auto_fields":["id","created_date","updated_date","created_by"]}
