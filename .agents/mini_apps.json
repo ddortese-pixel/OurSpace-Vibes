@@ -13,6 +13,12 @@
     },
     "SplashScreen": {
       "title": "SplashScreen"
+    },
+    "OurSpacePrivacyPolicy": {
+      "title": "OurSpacePrivacyPolicy"
+    },
+    "AppStoreReadiness": {
+      "title": "AppStoreReadiness"
     }
   }
 }
