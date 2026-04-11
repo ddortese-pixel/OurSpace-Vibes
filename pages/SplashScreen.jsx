@@ -31,7 +31,7 @@ export default function SplashScreen() {
         overflow: "hidden"
       }}
     >
-      {/* Full background image */}
+      {/* Full background image - latest cinematic image */}
       <img
         src="https://media.base44.com/images/public/69d9b8416964fe31ae3f9932/adc11af19_copilot_image_1775430901724.jpg"
         alt="The Legacy Circle"
@@ -58,14 +58,7 @@ export default function SplashScreen() {
       />
 
       {/* App name at bottom */}
-      <div
-        style={{
-          position: "absolute",
-          bottom: 48,
-          textAlign: "center",
-          zIndex: 10
-        }}
-      >
+      <div style={{ position: "absolute", bottom: 48, textAlign: "center", zIndex: 10 }}>
         <h1
           style={{
             fontSize: 36,
@@ -75,38 +68,20 @@ export default function SplashScreen() {
             WebkitBackgroundClip: "text",
             WebkitTextFillColor: "transparent",
             fontFamily: "'Georgia', serif",
-            letterSpacing: 2,
-            textShadow: "none"
+            letterSpacing: 2
           }}
         >
           THE LEGACY CIRCLE
         </h1>
-        <p
-          style={{
-            color: "#fde68a",
-            fontSize: 13,
-            marginTop: 6,
-            letterSpacing: 3,
-            textTransform: "uppercase",
-            opacity: 0.85
-          }}
-        >
+        <p style={{ color: "#fde68a", fontSize: 13, marginTop: 6, letterSpacing: 3, textTransform: "uppercase", opacity: 0.85 }}>
           Courage · Curiosity · Creativity · Unity
         </p>
-
-        {/* Loading dots */}
         <div style={{ marginTop: 24, display: "flex", justifyContent: "center", gap: 8 }}>
           {[0, 1, 2].map(i => (
-            <div
-              key={i}
-              style={{
-                width: 8,
-                height: 8,
-                borderRadius: "50%",
-                background: "#f59e0b",
-                animation: `pulse 1.2s ease-in-out ${i * 0.2}s infinite`
-              }}
-            />
+            <div key={i} style={{
+              width: 8, height: 8, borderRadius: "50%", background: "#f59e0b",
+              animation: `pulse 1.2s ease-in-out ${i * 0.2}s infinite`
+            }} />
           ))}
         </div>
       </div>
