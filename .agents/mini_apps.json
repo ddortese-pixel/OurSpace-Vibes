@@ -4,6 +4,9 @@
   "pages": {
     "PrivacyPolicy": {
       "title": "PrivacyPolicy"
+    },
+    "SplashScreen": {
+      "title": "SplashScreen"
     }
   }
 }
