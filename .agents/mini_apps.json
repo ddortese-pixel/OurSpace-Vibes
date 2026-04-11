@@ -2,6 +2,9 @@
   "app_id": "69d9c17c15f11af079841768",
   "slug": "untitled-app-79841768",
   "pages": {
+    "PostGenerator": {
+      "title": "PostGenerator"
+    },
     "LaunchTracker": {
       "title": "LaunchTracker"
     },
@@ -10,9 +13,6 @@
     },
     "SplashScreen": {
       "title": "SplashScreen"
-    },
-    "PostGenerator": {
-      "title": "PostGenerator"
     }
   }
 }
