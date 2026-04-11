@@ -1,27 +1,60 @@
 {
   "app_id": "69d9c17c15f11af079841768",
-  "slug": "untitled-app-79841768",
+  "slug": "legacy-circle",
   "pages": {
-    "PostGenerator": {
-      "title": "PostGenerator"
+    "AppStoreReadiness": {
+      "title": "AppStoreReadiness"
     },
     "LaunchTracker": {
       "title": "LaunchTracker"
     },
-    "PrivacyPolicy": {
-      "title": "PrivacyPolicy"
-    },
-    "SplashScreen": {
-      "title": "SplashScreen"
+    "OurSpaceOnboarding": {
+      "title": "OurSpaceOnboarding"
     },
     "OurSpacePrivacyPolicy": {
       "title": "OurSpacePrivacyPolicy"
     },
-    "AppStoreReadiness": {
-      "title": "AppStoreReadiness"
+    "PostGenerator": {
+      "title": "PostGenerator"
     },
-    "OurSpaceOnboarding": {
-      "title": "OurSpaceOnboarding"
+    "PrivacyPolicy": {
+      "title": "PrivacyPolicy"
+    },
+    "SeedOurSpace": {
+      "title": "SeedOurSpace"
+    },
+    "SplashScreen": {
+      "title": "SplashScreen"
+    },
+    "Discover": {
+      "title": "Discover"
+    },
+    "Home": {
+      "title": "Home"
+    },
+    "Messages": {
+      "title": "Messages"
+    },
+    "MyProfile": {
+      "title": "MyProfile"
+    },
+    "Notifications": {
+      "title": "Notifications"
+    },
+    "Onboarding": {
+      "title": "Onboarding"
+    },
+    "Profile": {
+      "title": "Profile"
+    },
+    "ReportContent": {
+      "title": "ReportContent"
+    },
+    "Settings": {
+      "title": "Settings"
+    },
+    "TermsOfService": {
+      "title": "TermsOfService"
     }
   }
 }
