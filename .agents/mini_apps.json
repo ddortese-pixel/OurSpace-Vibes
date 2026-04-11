@@ -7,6 +7,9 @@
     },
     "SplashScreen": {
       "title": "SplashScreen"
+    },
+    "LaunchTracker": {
+      "title": "LaunchTracker"
     }
   }
 }
