@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 const FEATURES = [
   { icon:"📰", title:"The Underground Feed",    desc:"Chronological only. Zero algorithm manipulation." },
   { icon:"🎨", title:"Your Digital Mirror",      desc:"Fully customizable profile — themes, music, mood." },
-  { icon:"🔒", title:"The Shield (E2EE)",        desc:"End-to-end encrypted DMs. We can't read them." },
+  { icon:"🔒", title:"The Shield (Private DMs)",        desc:"Private messages visible only to you and the recipient." },
   { icon:"✅", title:"Human-Only Filter",        desc:"Toggle to see only verified human-created content." },
   { icon:"📌", title:"The Guestbook Wall",       desc:"Let friends leave messages on your profile." },
   { icon:"👥", title:"10,000+ Members",          desc:"Real humans. No bots, no fake accounts." },

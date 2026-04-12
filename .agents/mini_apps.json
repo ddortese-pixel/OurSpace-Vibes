@@ -2,44 +2,26 @@
   "app_id": "69d9c17c15f11af079841768",
   "slug": "legacy-circle",
   "pages": {
-    "AppStoreReadiness": {
-      "title": "AppStoreReadiness"
-    },
-    "ContentPolicy": {
-      "title": "ContentPolicy"
+    "MyProfile": {
+      "title": "MyProfile"
     },
     "DiagnosticDashboard": {
       "title": "DiagnosticDashboard"
     },
-    "Discover": {
-      "title": "Discover"
+    "SplashScreen": {
+      "title": "SplashScreen"
     },
-    "Home": {
-      "title": "Home"
+    "PostGenerator": {
+      "title": "PostGenerator"
     },
     "LaunchTracker": {
       "title": "LaunchTracker"
     },
-    "Messages": {
-      "title": "Messages"
-    },
-    "MyProfile": {
-      "title": "MyProfile"
-    },
     "Notifications": {
       "title": "Notifications"
     },
-    "Onboarding": {
-      "title": "Onboarding"
-    },
-    "OurSpaceOnboarding": {
-      "title": "OurSpaceOnboarding"
-    },
-    "OurSpacePrivacyPolicy": {
-      "title": "OurSpacePrivacyPolicy"
-    },
-    "PostGenerator": {
-      "title": "PostGenerator"
+    "TermsOfService": {
+      "title": "TermsOfService"
     },
     "PrivacyPolicy": {
       "title": "PrivacyPolicy"
@@ -47,20 +29,38 @@
     "Profile": {
       "title": "Profile"
     },
+    "SeedOurSpace": {
+      "title": "SeedOurSpace"
+    },
+    "OurSpaceOnboarding": {
+      "title": "OurSpaceOnboarding"
+    },
     "ReportContent": {
       "title": "ReportContent"
     },
-    "SeedOurSpace": {
-      "title": "SeedOurSpace"
+    "AppStoreReadiness": {
+      "title": "AppStoreReadiness"
     },
     "Settings": {
       "title": "Settings"
     },
-    "SplashScreen": {
-      "title": "SplashScreen"
+    "ContentPolicy": {
+      "title": "ContentPolicy"
     },
-    "TermsOfService": {
-      "title": "TermsOfService"
+    "Discover": {
+      "title": "Discover"
+    },
+    "Home": {
+      "title": "Home"
+    },
+    "OurSpacePrivacyPolicy": {
+      "title": "OurSpacePrivacyPolicy"
+    },
+    "Onboarding": {
+      "title": "Onboarding"
+    },
+    "Messages": {
+      "title": "Messages"
     }
   }
 }

@@ -5,11 +5,13 @@ import { useNavigate } from "react-router-dom";
 const FEED_URL = "https://legacy-circle-ae3f9932.base44.app/functions/getPublicFeed";
 
 function injectGA(id) {
+  // Only load analytics if user has given consent
+  if (localStorage.getItem("os2_analyticsConsent") !== "true") return;
   if (document.getElementById(`ga-${id}`)) return;
   const s1 = document.createElement("script"); s1.id = `ga-${id}`; s1.async = true;
   s1.src = `https://www.googletagmanager.com/gtag/js?id=${id}`; document.head.appendChild(s1);
   const s2 = document.createElement("script");
-  s2.innerHTML = `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag("js",new Date());gtag("config","${id}");`;
+  s2.innerHTML = `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag("js",new Date());gtag("config","${id}",{"anonymize_ip":true});`;
   document.head.appendChild(s2);
 }
 
@@ -112,11 +114,14 @@ export default function Home() {
   const [unreadCount, setUnreadCount] = useState(0);
   const [activeStory, setActiveStory] = useState(null);
   const [loggedIn]  = useState(isLoggedIn());
+  const [showConsentBanner, setShowConsentBanner] = useState(
+    () => localStorage.getItem("os2_analyticsConsent") === null
+  );
   const navigate = useNavigate();
   const bottomRef = useRef(null);
 
   useEffect(() => {
-    injectGA("G-1N8GD2WM6L");
+    
     // favicon + title
     let link = document.querySelector("link[rel~='icon']");
     if (!link) { link = document.createElement("link"); link.rel="icon"; document.head.appendChild(link); }
@@ -332,6 +337,28 @@ export default function Home() {
             )}
             {activeStory.caption && <div style={{ padding:"12px 16px",color:"#cbd5e1",fontSize:14,lineHeight:1.6 }}>{activeStory.caption}</div>}
             {activeStory.music_title && <div style={{ padding:"0 16px 14px",color:"#22d3ee",fontSize:13 }}>🎵 {activeStory.music_title}</div>}
+          </div>
+        </div>
+      )}
+
+      {/* ── COOKIE CONSENT BANNER ── */}
+      {showConsentBanner && (
+        <div style={{ position:"fixed",bottom:80,left:0,right:0,zIndex:200,padding:"0 12px" }}>
+          <div style={{ maxWidth:600,margin:"0 auto",background:"#16162a",border:"1px solid #c084fc40",borderRadius:16,padding:"14px 16px",display:"flex",flexWrap:"wrap",gap:10,alignItems:"center",boxShadow:"0 4px 24px #00000080" }}>
+            <div style={{ flex:1,minWidth:220 }}>
+              <div style={{ fontWeight:700,fontSize:13,marginBottom:2 }}>🍪 Analytics Consent</div>
+              <div style={{ fontSize:12,color:"#64748b",lineHeight:1.5 }}>We use anonymized Google Analytics to improve the app. No personal data is shared. You can change this in Settings.</div>
+            </div>
+            <div style={{ display:"flex",gap:8,flexShrink:0 }}>
+              <button onClick={()=>{ localStorage.setItem("os2_analyticsConsent","false"); setShowConsentBanner(false); }}
+                style={{ padding:"8px 14px",background:"transparent",border:"1px solid #2a2a45",borderRadius:20,color:"#94a3b8",fontSize:12,cursor:"pointer",fontWeight:600 }}>
+                Decline
+              </button>
+              <button onClick={()=>{ localStorage.setItem("os2_analyticsConsent","true"); setShowConsentBanner(false); injectGA("G-1N8GD2WM6L"); }}
+                style={{ padding:"8px 14px",background:"linear-gradient(135deg,#c084fc,#22d3ee)",border:"none",borderRadius:20,color:"#000",fontSize:12,cursor:"pointer",fontWeight:700 }}>
+                Accept
+              </button>
+            </div>
           </div>
         </div>
       )}

@@ -5,11 +5,12 @@ import { useNavigate } from "react-router-dom";
 const DISCOVER_URL = "https://legacy-circle-ae3f9932.base44.app/functions/getPublicDiscover";
 
 function injectGA(id) {
+  if (localStorage.getItem("os2_analyticsConsent") !== "true") return;
   if (document.getElementById(`ga-${id}`)) return;
   const s1 = document.createElement("script"); s1.id = `ga-${id}`; s1.async = true;
   s1.src = `https://www.googletagmanager.com/gtag/js?id=${id}`; document.head.appendChild(s1);
   const s2 = document.createElement("script");
-  s2.innerHTML = `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag("js",new Date());gtag("config","${id}");`;
+  s2.innerHTML = `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag("js",new Date());gtag("config","${id}",{"anonymize_ip":true});`;
   document.head.appendChild(s2);
 }
 

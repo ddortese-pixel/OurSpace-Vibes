@@ -3,11 +3,12 @@ import { Message, Profile, Notification } from "../api/entities";
 import { useNavigate } from "react-router-dom";
 
 function injectGA(id) {
+  if (localStorage.getItem("os2_analyticsConsent") !== "true") return;
   if (document.getElementById(`ga-${id}`)) return;
   const s1 = document.createElement("script"); s1.id = `ga-${id}`; s1.async = true;
   s1.src = `https://www.googletagmanager.com/gtag/js?id=${id}`; document.head.appendChild(s1);
   const s2 = document.createElement("script");
-  s2.innerHTML = `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag("js",new Date());gtag("config","${id}");`;
+  s2.innerHTML = `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag("js",new Date());gtag("config","${id}",{"anonymize_ip":true});`;
   document.head.appendChild(s2);
 }
 
@@ -128,7 +129,7 @@ export default function Messages() {
     <div style={{ minHeight:"100vh",background:"#0d0d1a",color:"#f0f0f0",fontFamily:"'Segoe UI',sans-serif",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:20,padding:32,textAlign:"center",paddingBottom:80 }}>
       <div style={{ fontSize:64 }}>🔒</div>
       <div style={{ fontWeight:900,fontSize:24 }}>Messages are Private</div>
-      <div style={{ color:"#64748b",fontSize:14,maxWidth:280,lineHeight:1.6 }}>Sign in to send and receive end-to-end encrypted messages.</div>
+      <div style={{ color:"#64748b",fontSize:14,maxWidth:280,lineHeight:1.6 }}>Sign in to send and receive private messages.</div>
       <button onClick={()=>navigate("/OurSpaceOnboarding")} style={{ padding:"12px 32px",background:"linear-gradient(135deg,#c084fc,#22d3ee)",border:"none",borderRadius:20,color:"#000",fontWeight:700,fontSize:15,cursor:"pointer" }}>Join OurSpace →</button>
     </div>
   );
@@ -141,7 +142,7 @@ export default function Messages() {
         <>
           <div style={{ position:"sticky",top:0,zIndex:100,background:"#0d0d1aee",backdropFilter:"blur(12px)",borderBottom:"1px solid #2a2a45",padding:"14px 16px" }}>
             <div style={{ fontWeight:900,fontSize:20,background:"linear-gradient(90deg,#c084fc,#22d3ee)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent" }}>✉️ Messages</div>
-            <div style={{ fontSize:12,color:"#64748b",marginTop:2 }}>🔒 End-to-end encrypted</div>
+            <div style={{ fontSize:12,color:"#64748b",marginTop:2 }}>🔒 Private messages</div>
           </div>
           <div style={{ maxWidth:600,margin:"0 auto",width:"100%",padding:"12px 16px" }}>
             {loading && <div style={{ textAlign:"center",padding:32,color:"#64748b" }}>⏳ Loading messages...</div>}
@@ -187,14 +188,14 @@ export default function Messages() {
             </div>
             <div style={{ flex:1 }}>
               <div style={{ fontWeight:700,fontSize:15 }}>{activeProfile?.display_name||activeConvo}</div>
-              <div style={{ fontSize:11,color:"#64748b" }}>🔒 E2EE · {activeProfile?.is_online?"Online":"Offline"}</div>
+              <div style={{ fontSize:11,color:"#64748b" }}>🔒 Private · {activeProfile?.is_online?"Online":"Offline"}</div>
             </div>
           </div>
           <div style={{ flex:1,overflowY:"auto",padding:"16px",paddingBottom:80 }}>
             {convoMessages.length===0 && (
               <div style={{ textAlign:"center",padding:32,color:"#64748b" }}>
                 <div style={{ fontSize:32,marginBottom:8 }}>🔒</div>
-                <div style={{ fontSize:13 }}>This conversation is end-to-end encrypted.<br/>Send the first message!</div>
+                <div style={{ fontSize:13 }}>Your messages are private and visible only to you and this person.</div>
               </div>
             )}
             {convoMessages.map(m => {

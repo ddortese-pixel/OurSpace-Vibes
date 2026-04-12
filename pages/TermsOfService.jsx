@@ -4,16 +4,16 @@ export default function TermsOfService() {
   const navigate = useNavigate();
   const EFFECTIVE = "April 12, 2026";
   const COMPANY = "OurSpace 2.0";
-  const LEGAL_EMAIL = "legal@ourspace.app";
-  const DMCA_EMAIL = "dmca@ourspace.app";
-  const SAFETY_EMAIL = "safety@ourspace.app";
+  const LEGAL_EMAIL = "ddortese@gmail.com";
+  const DMCA_EMAIL = "ddortese@gmail.com";
+  const SAFETY_EMAIL = "ddortese@gmail.com";
 
   const sections = [
     ["1. Acceptance of Terms", `By accessing or using ${COMPANY} ("the Service"), you agree to be bound by these Terms of Service ("Terms") and our Privacy Policy. If you do not agree, do not use the Service. These Terms constitute a legally binding agreement between you and ${COMPANY}.`],
     ["2. Eligibility & Age Requirements", `You must be at least 13 years of age to use ${COMPANY}.
 
 • Under 13: You may not use this Service. If you are under 13, please visit The Legacy Circle, our platform designed for younger audiences.
-• Ages 13–17: You may use the Service only with verifiable consent from a parent or legal guardian. The parent or guardian must agree to these Terms on your behalf.
+• Ages 13–17: You may use the Service only with verifiable consent from a parent or legal guardian. A verification email is sent to the parent/guardian email provided during registration. The parent or guardian must confirm consent before the account is activated.
 • 18 and older: You may use the Service independently.
 
 By using the Service, you confirm that you meet these requirements. We reserve the right to terminate accounts where age requirements have been misrepresented.`],
@@ -48,8 +48,7 @@ You represent and warrant that:
 • Content generated in whole or in part by AI tools MUST be labeled as AI-generated.
 • Intentionally misrepresenting AI content as human-created is a violation of these Terms.
 • The Human-Only Filter relies on honest self-reporting and community flagging.
-• Violations may result in account suspension or permanent ban.
-• Repeated violations of AI labeling rules will result in immediate permanent ban.`],
+• Violations may result in account suspension or permanent ban.`],
     ["7. DMCA & Intellectual Property", `We respect intellectual property rights and comply with the Digital Millennium Copyright Act (DMCA).
 
 To file a DMCA takedown notice, email ${DMCA_EMAIL} with:
@@ -63,10 +62,10 @@ To file a DMCA takedown notice, email ${DMCA_EMAIL} with:
 We will respond to valid DMCA notices promptly. Counter-notices may be submitted per 17 U.S.C. § 512(g).`],
     ["8. Content Moderation", `We reserve the right to remove content and suspend or terminate accounts that violate these Terms, with or without notice. We employ:
 • Automated detection systems for prohibited content.
-• User-initiated content reports reviewed by our moderation team.
+• User-initiated content reports reviewed by our moderation team within 24 hours.
 • Appeals process: email ${SAFETY_EMAIL} with "Appeal" in the subject line.
 
-We are not obligated to pre-screen content but may do so at our discretion. We are not liable for the content posted by users.`],
+We are not obligated to pre-screen content but may do so at our discretion.`],
     ["9. Child Safety (CSAM Zero Tolerance)", `${COMPANY} has a zero-tolerance policy for Child Sexual Abuse Material (CSAM). Any account found to be distributing, sharing, or generating CSAM will be:
 • Immediately and permanently banned.
 • Reported to the National Center for Missing & Exploited Children (NCMEC) CyberTipline.
@@ -74,24 +73,28 @@ We are not obligated to pre-screen content but may do so at our discretion. We a
 
 If you encounter suspected CSAM, report it immediately at ${SAFETY_EMAIL}.`],
     ["10. Privacy", `Our Privacy Policy governs how we collect, use, and share your information and is incorporated into these Terms by reference. By using the Service, you consent to our data practices as described in the Privacy Policy.`],
-    ["11. End-to-End Encryption", `The Shield (E2EE messaging) encrypts messages on your device. We cannot access E2EE message content. You are solely responsible for:
-• The content of your encrypted messages.
-• The security of your device and credentials.
-Using E2EE messaging to conduct illegal activity remains a violation of these Terms regardless of encryption.`],
-    ["12. Third-Party Links & Services", `The Service may contain links to third-party websites or services. We do not control, endorse, or assume responsibility for any third-party content, privacy practices, or services. Your interactions with third parties are governed by their terms and policies.`],
-    ["13. Disclaimers", `THE SERVICE IS PROVIDED "AS IS" AND "AS AVAILABLE" WITHOUT WARRANTIES OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, OR NON-INFRINGEMENT. We do not warrant that the Service will be uninterrupted, error-free, or secure. We are not responsible for user-generated content posted by third parties.`],
-    ["14. Limitation of Liability", `TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, ${COMPANY.toUpperCase()} SHALL NOT BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES, INCLUDING LOSS OF PROFITS, DATA, OR GOODWILL, ARISING OUT OF OR IN CONNECTION WITH YOUR USE OF THE SERVICE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGES. OUR TOTAL LIABILITY SHALL NOT EXCEED $100 OR THE AMOUNT YOU PAID US IN THE PAST 12 MONTHS, WHICHEVER IS GREATER.`],
-    ["15. Indemnification", `You agree to indemnify, defend, and hold harmless ${COMPANY}, its officers, directors, employees, and agents from any claims, liabilities, damages, losses, or expenses (including reasonable legal fees) arising out of or in connection with: your use of the Service, your content, your violation of these Terms, or your violation of any third-party rights.`],
-    ["16. Governing Law & Dispute Resolution", `These Terms are governed by the laws of the State of Delaware, United States, without regard to conflict of law provisions. Any disputes shall first be attempted to be resolved through good-faith negotiation. If unresolved, disputes shall be submitted to binding arbitration in Delaware under the AAA Commercial Arbitration Rules. YOU WAIVE YOUR RIGHT TO A JURY TRIAL OR CLASS ACTION LAWSUIT.`],
-    ["17. Changes to Terms", `We may update these Terms at any time. We will notify users of material changes via in-app notification and email at least 30 days before they take effect. Continued use after changes constitutes acceptance of the revised Terms. If you do not agree with changes, you must stop using the Service and delete your account.`],
-    ["18. Termination", `We may suspend or terminate your account at any time for violations of these Terms. You may delete your account at any time via Settings. Upon termination, your license to use the Service ends immediately. Provisions that by their nature should survive termination will survive.`],
-    ["19. Entire Agreement", `These Terms, together with our Privacy Policy and Content Moderation Policy, constitute the entire agreement between you and ${COMPANY} regarding the Service and supersede all prior agreements.`],
-    ["20. Contact", `Legal questions: ${LEGAL_EMAIL}\nDMCA notices: ${DMCA_EMAIL}\nSafety reports: ${SAFETY_EMAIL}`],
+    ["11. Private Messaging", `Private messages on OurSpace 2.0 are visible only to the sender and recipient. Message content is stored securely and is not used for advertising or profiling. Using the messaging system to conduct illegal activity is a violation of these Terms and may be reported to law enforcement.`],
+    ["12. Account Deletion & Data Erasure", `When you delete your account via Settings → Delete Account:
+• All of your profile data is permanently deleted.
+• All of your posts, comments, stories, and wall posts are permanently deleted.
+• All of your private messages are permanently deleted.
+• All of your friend connections and notifications are permanently deleted.
+• Deletion is irreversible. We cannot recover deleted accounts or content.
+This satisfies your right to erasure under GDPR and CCPA.`],
+    ["13. Do Not Sell My Personal Information", `OurSpace 2.0 does not sell, rent, or trade your personal information to third parties for monetary or other valuable consideration. This applies to all users including California residents under CCPA.`],
+    ["14. Third-Party Links & Services", `The Service may contain links to third-party websites or services. We do not control, endorse, or assume responsibility for any third-party content, privacy practices, or services. Your interactions with third parties are governed by their terms and policies.`],
+    ["15. Disclaimers", `THE SERVICE IS PROVIDED "AS IS" AND "AS AVAILABLE" WITHOUT WARRANTIES OF ANY KIND, EXPRESS OR IMPLIED. We do not warrant that the Service will be uninterrupted, error-free, or secure. We are not responsible for user-generated content posted by third parties.`],
+    ["16. Limitation of Liability", `TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, ${COMPANY.toUpperCase()} SHALL NOT BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES. OUR TOTAL LIABILITY SHALL NOT EXCEED $100 OR THE AMOUNT YOU PAID US IN THE PAST 12 MONTHS, WHICHEVER IS GREATER.`],
+    ["17. Indemnification", `You agree to indemnify, defend, and hold harmless ${COMPANY}, its officers, directors, employees, and agents from any claims, liabilities, damages, losses, or expenses arising out of or in connection with: your use of the Service, your content, or your violation of these Terms.`],
+    ["18. Governing Law & Dispute Resolution", `These Terms are governed by the laws of the State of Indiana, United States, without regard to conflict of law provisions. Any disputes shall first be attempted to be resolved through good-faith negotiation. If unresolved, disputes shall be submitted to binding arbitration in Indiana under the AAA Commercial Arbitration Rules.`],
+    ["19. Changes to Terms", `We may update these Terms at any time. We will notify users of material changes via in-app notification and email at least 30 days before they take effect. Continued use after changes constitutes acceptance.`],
+    ["20. Termination", `We may suspend or terminate your account at any time for violations of these Terms. You may delete your account at any time via Settings. Upon termination, your license to use the Service ends immediately.`],
+    ["21. Entire Agreement", `These Terms, together with our Privacy Policy and Content Policy, constitute the entire agreement between you and ${COMPANY} regarding the Service.`],
+    ["22. Contact", `Legal questions, DMCA notices, and safety reports:\n${LEGAL_EMAIL}\n\nWe respond to all inquiries within 5 business days.`],
   ];
 
   return (
     <div style={{ minHeight: "100vh", background: "#0d0d1a", color: "#f0f0f0", fontFamily: "'Segoe UI', system-ui, sans-serif" }}>
-      {/* Hero */}
       <div style={{ background: "linear-gradient(135deg,#0f0f2e,#1a0533)", padding: "48px 24px 36px", textAlign: "center", borderBottom: "1px solid #1e1e3a" }}>
         <button onClick={() => navigate(-1)} style={{ display: "block", margin: "0 0 24px", background: "none", border: "none", color: "#94a3b8", fontSize: 14, cursor: "pointer" }}>← Back</button>
         <div style={{ fontSize: 52, marginBottom: 16 }}>📋</div>
@@ -100,30 +103,16 @@ Using E2EE messaging to conduct illegal activity remains a violation of these Te
         </h1>
         <p style={{ color: "#64748b", fontSize: 13, margin: "0 0 20px" }}>Effective: {EFFECTIVE} · {COMPANY}</p>
         <div style={{ display: "flex", justifyContent: "center", flexWrap: "wrap", gap: 8 }}>
-          {["⚖️ Legally Binding","🚫 Zero Tolerance CSAM","🤖 AI Transparency Required","🔒 DMCA Compliant"].map(t => (
+          {["⚖️ Legally Binding","🚫 Zero Tolerance CSAM","🤖 AI Transparency Required","🔒 DMCA Compliant","🚫 No Data Selling"].map(t => (
             <span key={t} style={{ background: "#1e1e3a", border: "1px solid #2a2a45", borderRadius: 20, padding: "5px 12px", fontSize: 12, color: "#94a3b8" }}>{t}</span>
           ))}
         </div>
       </div>
 
       <div style={{ maxWidth: 720, margin: "0 auto", padding: "32px 16px 60px" }}>
-        {/* Quick summary */}
-        <div style={{ background: "#13132b", borderRadius: 16, border: "1px solid #2a2a45", padding: "20px 24px", marginBottom: 32 }}>
-          <h2 style={{ color: "#c084fc", fontSize: 15, fontWeight: 700, margin: "0 0 12px" }}>⚡ TL;DR — The Quick Version</h2>
-          <ul style={{ color: "#94a3b8", fontSize: 14, lineHeight: 2, paddingLeft: 20, margin: 0 }}>
-            <li>You must be 13+ to use the Service (under 18 needs parental consent)</li>
-            <li>You own your content — we just host it</li>
-            <li>AI-generated content MUST be labeled as AI</li>
-            <li>No hate speech, harassment, CSAM, or illegal content — ever</li>
-            <li>We can't read your encrypted messages</li>
-            <li>We don't sell your data, ever</li>
-            <li>Violations = suspension or permanent ban</li>
-          </ul>
-        </div>
-
         {sections.map(([title, body]) => (
           <div key={title} style={{ marginBottom: 28 }}>
-            <h2 style={{ fontSize: 15, fontWeight: 700, color: "#c084fc", marginBottom: 10, borderBottom: "1px solid #1e1e3a", paddingBottom: 8 }}>{title}</h2>
+            <h2 style={{ fontSize: 15, fontWeight: 700, color: "#22d3ee", marginBottom: 10, borderBottom: "1px solid #1e1e3a", paddingBottom: 8 }}>{title}</h2>
             <p style={{ color: "#94a3b8", fontSize: 14, lineHeight: 1.8, margin: 0, whiteSpace: "pre-line" }}>{body}</p>
           </div>
         ))}
@@ -133,7 +122,9 @@ Using E2EE messaging to conduct illegal activity remains a violation of these Te
           <a href={`mailto:${LEGAL_EMAIL}`} style={{ color: "#c084fc", fontWeight: 700, fontSize: 15, textDecoration: "none" }}>{LEGAL_EMAIL}</a>
           <p style={{ color: "#475569", fontSize: 12, marginTop: 16, marginBottom: 0 }}>
             © {new Date().getFullYear()} {COMPANY}. All rights reserved.{" "}
-            <span style={{ color: "#22d3ee", cursor: "pointer" }} onClick={() => navigate("/PrivacyPolicy")}>Privacy Policy</span>
+            <span style={{ color: "#c084fc", cursor: "pointer" }} onClick={() => navigate("/PrivacyPolicy")}>Privacy Policy</span>
+            {" · "}
+            <span style={{ color: "#22d3ee", cursor: "pointer" }} onClick={() => navigate("/ContentPolicy")}>Content Policy</span>
           </p>
         </div>
       </div>
