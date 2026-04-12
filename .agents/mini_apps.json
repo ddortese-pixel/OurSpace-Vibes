@@ -58,6 +58,9 @@
     },
     "Home": {
       "title": "Home"
+    },
+    "ContentPolicy": {
+      "title": "ContentPolicy"
     }
   }
 }

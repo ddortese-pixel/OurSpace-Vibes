@@ -176,8 +176,8 @@ export default function Settings() {
           <div onClick={() => navigate("/TermsOfService")} style={{ padding: "14px 0", borderBottom: "1px solid #1e1e3a", cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <span>Terms of Service</span><span style={{ color: "#64748b" }}>→</span>
           </div>
-          <div onClick={() => navigate("/OurSpacePrivacyPolicy")} style={{ padding: "14px 0", cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <span>Content Moderation Policy</span><span style={{ color: "#64748b" }}>→</span>
+          <div onClick={() => navigate("/ContentPolicy")} style={{ padding: "14px 0", cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <span>Community Guidelines & Content Policy</span><span style={{ color: "#64748b" }}>→</span>
           </div>
         </Section>
 
