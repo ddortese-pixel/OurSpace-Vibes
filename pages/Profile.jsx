@@ -30,8 +30,14 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(true);
   const [posting, setPosting] = useState(false);
 
-  useEffect(() => { if(email) loadAll(); }, [email]);
+  useEffect(() => {
     injectGA("G-1N8GD2WM6L");
+    if (!email) {
+      navigate("/MyProfile");
+      return;
+    }
+    loadAll();
+  }, [email]);
 
   const loadAll = async () => {
     setLoading(true);
@@ -78,7 +84,7 @@ export default function ProfilePage() {
   };
   const bg = GRADIENTS[profile?.background_gradient]||GRADIENTS.default;
 
-  if(!email) return <div style={{ minHeight:"100vh",background:"#0d0d1a",color:"#f0f0f0",display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'Segoe UI',sans-serif" }}>No user specified.</div>;
+  if(!email) return null;
   if(loading) return <div style={{ minHeight:"100vh",background:"#0d0d1a",color:"#64748b",display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'Segoe UI',sans-serif" }}>Loading...</div>;
 
   return (

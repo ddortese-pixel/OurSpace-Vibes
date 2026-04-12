@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
-import { Profile, Post } from "../api/entities";
 import { useNavigate } from "react-router-dom";
+
+const DISCOVER_URL = "https://legacy-circle-ae3f9932.base44.app/functions/getPublicDiscover";
 
 function injectGA(measurementId) {
   if (document.getElementById(`ga-${measurementId}`)) return;
@@ -30,30 +31,31 @@ export default function Discover() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  useEffect(() => { loadAll(); }, []);
+  useEffect(() => {
     injectGA("G-1N8GD2WM6L");
+    loadAll();
+  }, []);
 
-  const loadAll = async () => {
+  const loadAll = async (q = "") => {
     setLoading(true);
     try {
-      const [p, po] = await Promise.all([Profile.list(), Post.list("-created_date")]);
-      setProfiles(p);
-      setPosts(po);
-    } catch(e){ console.error(e); }
+      const res = await fetch(DISCOVER_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ query: q }),
+      });
+      const data = await res.json();
+      setProfiles(data.profiles || []);
+      setPosts(data.posts || []);
+    } catch(e) { console.error(e); }
     setLoading(false);
   };
 
-  const filteredProfiles = profiles.filter(p =>
-    !query || p.display_name?.toLowerCase().includes(query.toLowerCase()) ||
-    p.headline?.toLowerCase().includes(query.toLowerCase()) ||
-    (Array.isArray(p.interests) && p.interests.some(i=>i.toLowerCase().includes(query.toLowerCase())))
-  );
-
-  const filteredPosts = posts.filter(p =>
-    !query || p.content?.toLowerCase().includes(query.toLowerCase()) ||
-    p.searchable_text?.toLowerCase().includes(query.toLowerCase()) ||
-    p.title?.toLowerCase().includes(query.toLowerCase())
-  );
+  // Live search with debounce
+  useEffect(() => {
+    const t = setTimeout(() => loadAll(query), 350);
+    return () => clearTimeout(t);
+  }, [query]);
 
   return (
     <div style={{ minHeight:"100vh",background:"#0d0d1a",color:"#f0f0f0",fontFamily:"'Segoe UI',sans-serif",paddingBottom:80 }}>
@@ -75,9 +77,9 @@ export default function Discover() {
         {loading && <div style={{ textAlign:"center",padding:32,color:"#64748b" }}>Searching...</div>}
 
         {!loading && tab==="people" && (
-          filteredProfiles.length===0
-            ? <div style={{ textAlign:"center",padding:32,color:"#64748b" }}>No people found.</div>
-            : filteredProfiles.map(p=>(
+          profiles.length===0
+            ? <div style={{ textAlign:"center",padding:32,color:"#64748b" }}>No people found. Be the first to join! 🚀</div>
+            : profiles.map(p=>(
               <div key={p.id} onClick={()=>navigate(`/Profile?email=${p.user_email}`)} style={{ background:"#16162a",border:"1px solid #2a2a45",borderRadius:14,padding:16,marginBottom:12,cursor:"pointer",display:"flex",gap:14,alignItems:"center" }}>
                 <div style={{ width:52,height:52,borderRadius:"50%",background:"linear-gradient(135deg,#c084fc,#22d3ee)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,fontWeight:700,flexShrink:0,overflow:"hidden" }}>
                   {p.avatar_url?<img src={p.avatar_url} alt="" style={{ width:"100%",height:"100%",objectFit:"cover" }} />:(p.display_name?.[0]||"?")}
@@ -97,9 +99,9 @@ export default function Discover() {
         )}
 
         {!loading && tab==="posts" && (
-          filteredPosts.length===0
+          posts.length===0
             ? <div style={{ textAlign:"center",padding:32,color:"#64748b" }}>No posts found.</div>
-            : filteredPosts.map(p=>(
+            : posts.map(p=>(
               <div key={p.id} style={{ background:"#16162a",border:"1px solid #2a2a45",borderRadius:14,padding:16,marginBottom:12 }}>
                 <div style={{ fontWeight:600,fontSize:13,color:"#94a3b8",marginBottom:6 }}>{p.author_name}</div>
                 {p.content&&<div style={{ fontSize:14,color:"#cbd5e1",lineHeight:1.6 }}>{p.content.slice(0,200)}{p.content.length>200?"...":""}</div>}
