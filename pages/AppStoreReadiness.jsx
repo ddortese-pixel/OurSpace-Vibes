@@ -28,7 +28,7 @@ const apps = [
       { done: false, item: "Google Play Developer Account ($25 one-time)" },
     ],
     assets: [
-      { label: "App Icon", url: "https://media.base44.com/images/public/69d9b8416964fe31ae3f9932/7bbdaee82_generated_image.png" },
+      { label: "App Icon", url: "https://media.base44.com/images/public/69d9b8416964fe31ae3f9932/f199871d3_generated_image.png" },
       { label: "Splash Screen", url: "https://media.base44.com/images/public/69d9b8416964fe31ae3f9932/446d12381_generated_image.png" },
       { label: "Character Guides Screenshot", url: "https://media.base44.com/images/public/69d9b8416964fe31ae3f9932/142e00b54_generated_image.png" },
     ]

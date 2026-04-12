@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+const LC_ICON = "https://media.base44.com/images/public/69d9b8416964fe31ae3f9932/f199871d3_generated_image.png";
+
 function injectGA(measurementId) {
   if (document.getElementById(`ga-${measurementId}`)) return;
   const script1 = document.createElement("script");
@@ -13,12 +15,33 @@ function injectGA(measurementId) {
   document.head.appendChild(script2);
 }
 
+function injectAppMeta(iconUrl, appName) {
+  // Favicon
+  let link = document.querySelector("link[rel~='icon']");
+  if (!link) { link = document.createElement("link"); link.rel = "icon"; document.head.appendChild(link); }
+  link.href = iconUrl;
+  // Apple touch icon
+  let apple = document.querySelector("link[rel='apple-touch-icon']");
+  if (!apple) { apple = document.createElement("link"); apple.rel = "apple-touch-icon"; document.head.appendChild(apple); }
+  apple.href = iconUrl;
+  // Title
+  document.title = appName;
+  // OG meta
+  let ogImg = document.querySelector("meta[property='og:image']");
+  if (!ogImg) { ogImg = document.createElement("meta"); ogImg.setAttribute("property","og:image"); document.head.appendChild(ogImg); }
+  ogImg.setAttribute("content", iconUrl);
+  let ogTitle = document.querySelector("meta[property='og:title']");
+  if (!ogTitle) { ogTitle = document.createElement("meta"); ogTitle.setAttribute("property","og:title"); document.head.appendChild(ogTitle); }
+  ogTitle.setAttribute("content", appName);
+}
+
 export default function SplashScreen() {
   const [fadeOut, setFadeOut] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
     injectGA("G-HEWR0ZB5G8");
+    injectAppMeta(LC_ICON, "The Legacy Circle");
     const fadeTimer = setTimeout(() => setFadeOut(true), 3200);
     const navTimer = setTimeout(() => navigate("/Home"), 4000);
     return () => {
@@ -56,6 +79,12 @@ export default function SplashScreen() {
           objectPosition: "center top"
         }}
       />
+
+      {/* App Icon top-center */}
+      <div style={{ position:"absolute", top:48, zIndex:10, textAlign:"center" }}>
+        <img src={LC_ICON} alt="Legacy Circle Icon"
+          style={{ width:100, height:100, borderRadius:22, boxShadow:"0 8px 32px rgba(245,158,11,0.5)", border:"2px solid rgba(253,230,138,0.4)" }} />
+      </div>
 
       {/* Overlay gradient at bottom */}
       <div

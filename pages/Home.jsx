@@ -12,6 +12,22 @@ function injectGA(id) {
   s2.innerHTML=`window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag("js",new Date());gtag("config","${id}");`;
   document.head.appendChild(s2);
 }
+const OS2_ICON = "https://media.base44.com/images/public/69d9b8416964fe31ae3f9932/7bbdaee82_generated_image.png";
+
+function injectAppMeta(iconUrl, appName) {
+  let link = document.querySelector("link[rel~='icon']");
+  if (!link) { link = document.createElement("link"); link.rel = "icon"; document.head.appendChild(link); }
+  link.href = iconUrl;
+  let apple = document.querySelector("link[rel='apple-touch-icon']");
+  if (!apple) { apple = document.createElement("link"); apple.rel = "apple-touch-icon"; document.head.appendChild(apple); }
+  apple.href = iconUrl;
+  document.title = appName;
+  let ogImg = document.querySelector("meta[property='og:image']");
+  if (!ogImg) { ogImg = document.createElement("meta"); ogImg.setAttribute("property","og:image"); document.head.appendChild(ogImg); }
+  ogImg.setAttribute("content", iconUrl);
+}
+
+
 
 // Local identity helpers — stored in localStorage
 function getMyEmail() { return localStorage.getItem("os2_email") || null; }
@@ -77,6 +93,7 @@ export default function Home() {
 
   useEffect(() => {
     injectGA("G-1N8GD2WM6L");
+    injectAppMeta(OS2_ICON, "OurSpace 2.0");
     loadInitial();
   }, []);
 
