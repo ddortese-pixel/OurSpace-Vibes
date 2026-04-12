@@ -1,0 +1,38 @@
+User-agent: *
+Allow: /
+Allow: /Home
+Allow: /Discover
+Allow: /OurSpaceOnboarding
+Allow: /PrivacyPolicy
+Allow: /TermsOfService
+Allow: /ContentPolicy
+Allow: /SplashScreen
+
+# Block admin/internal tools
+Disallow: /DiagnosticDashboard
+Disallow: /SeedOurSpace
+Disallow: /PostGenerator
+Disallow: /LaunchTracker
+Disallow: /AppStoreReadiness
+
+# Sitemaps
+Sitemap: https://legacy-circle.base44.app/sitemap.xml
+
+# Crawl-delay for responsible bots
+Crawl-delay: 2
+
+# Block AI training scrapers
+User-agent: GPTBot
+Disallow: /
+
+User-agent: ChatGPT-User
+Disallow: /
+
+User-agent: CCBot
+Disallow: /
+
+User-agent: anthropic-ai
+Disallow: /
+
+User-agent: Google-Extended
+Disallow: /
