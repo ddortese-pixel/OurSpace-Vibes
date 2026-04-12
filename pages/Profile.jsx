@@ -2,6 +2,18 @@ import { useState, useEffect } from "react";
 import { Profile, Post, WallPost, Friend, Notification } from "../api/entities";
 import { useNavigate } from "react-router-dom";
 
+function injectGA(measurementId) {
+  if (document.getElementById(`ga-${measurementId}`)) return;
+  const s1 = document.createElement("script");
+  s1.id = `ga-${measurementId}`;
+  s1.async = true;
+  s1.src = `https://www.googletagmanager.com/gtag/js?id=${measurementId}`;
+  document.head.appendChild(s1);
+  const s2 = document.createElement("script");
+  s2.innerHTML = `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag("js",new Date());gtag("config","${measurementId}");`;
+  document.head.appendChild(s2);
+}
+
 const MY_EMAIL = "me@ourspace.app";
 
 export default function ProfilePage() {
@@ -19,6 +31,7 @@ export default function ProfilePage() {
   const [posting, setPosting] = useState(false);
 
   useEffect(() => { if(email) loadAll(); }, [email]);
+    injectGA("G-1N8GD2WM6L");
 
   const loadAll = async () => {
     setLoading(true);

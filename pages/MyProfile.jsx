@@ -2,6 +2,18 @@ import { useState, useEffect } from "react";
 import { Profile, Post, WallPost, Friend } from "../api/entities";
 import { useNavigate } from "react-router-dom";
 
+function injectGA(measurementId) {
+  if (document.getElementById(`ga-${measurementId}`)) return;
+  const s1 = document.createElement("script");
+  s1.id = `ga-${measurementId}`;
+  s1.async = true;
+  s1.src = `https://www.googletagmanager.com/gtag/js?id=${measurementId}`;
+  document.head.appendChild(s1);
+  const s2 = document.createElement("script");
+  s2.innerHTML = `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag("js",new Date());gtag("config","${measurementId}");`;
+  document.head.appendChild(s2);
+}
+
 const NAV = [
   { icon: "🏠", path: "/Home" },
   { icon: "🔍", path: "/Discover" },
@@ -22,6 +34,7 @@ export default function MyProfile() {
   const navigate = useNavigate();
 
   useEffect(() => { loadProfile(); }, []);
+    injectGA("G-1N8GD2WM6L");
 
   const loadProfile = async () => {
     setLoading(true);

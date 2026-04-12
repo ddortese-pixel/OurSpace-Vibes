@@ -1,8 +1,21 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+
+function injectGA(measurementId) {
+  if (document.getElementById(`ga-${measurementId}`)) return;
+  const s1 = document.createElement("script");
+  s1.id = `ga-${measurementId}`;
+  s1.async = true;
+  s1.src = `https://www.googletagmanager.com/gtag/js?id=${measurementId}`;
+  document.head.appendChild(s1);
+  const s2 = document.createElement("script");
+  s2.innerHTML = `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag("js",new Date());gtag("config","${measurementId}");`;
+  document.head.appendChild(s2);
+}
 
 export default function Settings() {
   const navigate = useNavigate();
+  useEffect(() => { injectGA("G-1N8GD2WM6L"); }, []);
   const [humanFilter, setHumanFilter] = useState(false);
   const [notifLikes, setNotifLikes] = useState(true);
   const [notifComments, setNotifComments] = useState(true);
