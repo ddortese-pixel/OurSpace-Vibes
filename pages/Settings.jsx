@@ -88,7 +88,7 @@ export default function Settings() {
 
         <div style={{ background:"#16162a",borderRadius:16,padding:"0 16px",marginBottom:20,border:"1px solid #2a2a45" }}>
           <div style={{ padding:"14px 0",borderBottom:"1px solid #2a2a4520",fontWeight:700,fontSize:12,color:"#c084fc",letterSpacing:1,textTransform:"uppercase" }}>Account</div>
-          <div style={{ padding:"14px 0",cursor:"pointer",color:"#f87171",fontWeight:600" }} onClick={()=>window.confirm("Are you sure you want to delete your account? This cannot be undone.")}>Delete Account</div>
+          <div style={{ padding:"14px 0",cursor:"pointer",color:"#f87171",fontWeight:600 }} onClick={()=>window.confirm("Are you sure you want to delete your account? This cannot be undone.")}>Delete Account</div>
         </div>
 
         <button onClick={save} style={{ width:"100%",padding:"14px",background:"linear-gradient(135deg,#c084fc,#22d3ee)",border:"none",borderRadius:12,color:"#000",fontWeight:700,fontSize:16,cursor:"pointer" }}>
