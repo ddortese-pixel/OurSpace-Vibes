@@ -40,9 +40,11 @@ export default function OurSpaceOnboarding() {
     setAgeError(""); setStep(1);
   };
 
-  const checkParent = () => {
+  const checkParent = async () => {
     if (!parentEmail.includes("@")) { setAgeError("Enter a valid parent/guardian email."); return; }
     if (!parentConsent)              { setAgeError("Parent/guardian must agree to Terms of Service."); return; }
+    setAgeError("Sending verification email to parent/guardian..."); 
+    // Will send verification email after account is created
     setAgeError(""); setStep(1);
   };
 
@@ -51,19 +53,39 @@ export default function OurSpaceOnboarding() {
     if (!email.trim()||!email.includes("@")) { setNameError("Enter a valid email address."); return; }
     setCreating(true);
     try {
+      const userEmail = email.trim().toLowerCase();
+      const userAge = parseInt(age);
       // Save to localStorage
-      localStorage.setItem("os2_email", email.trim().toLowerCase());
+      localStorage.setItem("os2_email", userEmail);
       localStorage.setItem("os2_name",  name.trim());
       localStorage.setItem("os2_vibe",  vibe);
-      // Create profile record
+      // Create profile record (pending if under 18)
+      const isPendingConsent = needsParent && parentEmail;
       await Profile.create({
-        user_email: email.trim().toLowerCase(),
+        user_email: userEmail,
         display_name: name.trim(),
         background_gradient: vibe,
-        is_online: true,
+        is_online: !isPendingConsent,
         profile_views: 0,
         privacy_level: "public",
-      }).catch(()=>{}); // don't block on failure
+        mood: isPendingConsent ? "PENDING_CONSENT" : "",
+      }).catch(()=>{});
+      // If under 18, fire COPPA parent verification email
+      if (isPendingConsent) {
+        try {
+          await fetch("https://legacy-circle-ae3f9932.base44.app/functions/sendParentVerification", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              childEmail: userEmail,
+              childName: name.trim(),
+              parentEmail: parentEmail.trim(),
+              childAge: userAge,
+            }),
+          });
+          setNameError("");
+        } catch(e) { console.warn("Parent verification email failed:", e); }
+      }
       setStep(4); // welcome step
     } catch(e) { console.error(e); }
     setCreating(false);

@@ -1,6 +1,6 @@
-import { createClientFromRequest } from "@base44/sdk";
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
-export default async function handler(req: Request): Promise<Response> {
+Deno.serve(async (req) => {
   const base44 = createClientFromRequest(req);
 
   try {
