@@ -70,9 +70,13 @@ export default function Messages() {
         <div style={{ color:"#64748b",fontSize:15,maxWidth:280 }}>Sign in to send and receive end-to-end encrypted messages.</div>
         <button onClick={() => navigate("/Onboarding")} style={{ padding:"12px 28px",background:"linear-gradient(135deg,#c084fc,#22d3ee)",border:"none",borderRadius:24,color:"#000",fontWeight:800,fontSize:15,cursor:"pointer",marginTop:8 }}>Get Started</button>
         <button onClick={() => navigate("/Home")} style={{ background:"none",border:"1px solid #2a2a45",borderRadius:24,color:"#94a3b8",padding:"10px 24px",cursor:"pointer",fontSize:14 }}>← Back to Feed</button>
-        <div style={{ position:"fixed",bottom:0,left:0,right:0,background:"#0d0d1a",borderTop:"1px solid #2a2a45",display:"flex",justifyContent:"space-around",padding:"10px 0" }}>
+        <div style={{ position:"fixed",bottom:0,left:0,right:0,background:"#0b0b1ef5",backdropFilter:"blur(16px)",borderTop:"1px solid #1e1e3a",display:"flex",justifyContent:"space-around",padding:"10px 0 12px" }}>
           {NAV.map(item => (
-            <button key={item.path} onClick={() => navigate(item.path)} style={{ background:"none",border:"none",color:window.location.pathname===item.path?"#c084fc":"#64748b",cursor:"pointer",fontSize:22 }}>{item.icon}</button>
+            <button key={item.path} onClick={() => navigate(item.path)}
+              style={{ background:"none",border:"none",cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:3,padding:"4px 12px" }}>
+              <span style={{ fontSize:22,opacity:window.location.pathname===item.path?1:0.5 }}>{item.icon}</span>
+              <span style={{ fontSize:10,color:window.location.pathname===item.path?"#c084fc":"#475569",fontWeight:window.location.pathname===item.path?700:400 }}>{item.label}</span>
+            </button>
           ))}
         </div>
       </div>
@@ -207,9 +211,13 @@ export default function Messages() {
       )}
 
       {!activeConvo && (
-        <div style={{ position:"fixed",bottom:0,left:0,right:0,background:"#0d0d1a",borderTop:"1px solid #2a2a45",display:"flex",justifyContent:"space-around",padding:"10px 0",zIndex:100 }}>
+        <div style={{ position:"fixed",bottom:0,left:0,right:0,background:"#0b0b1ef5",backdropFilter:"blur(16px)",borderTop:"1px solid #1e1e3a",display:"flex",justifyContent:"space-around",padding:"10px 0 12px",zIndex:100 }}>
           {NAV.map(item => (
-            <button key={item.path} onClick={() => navigate(item.path)} style={{ background:"none",border:"none",color:window.location.pathname===item.path?"#c084fc":"#64748b",cursor:"pointer",fontSize:22 }}>{item.icon}</button>
+            <button key={item.path} onClick={() => navigate(item.path)}
+              style={{ background:"none",border:"none",cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:3,padding:"4px 12px" }}>
+              <span style={{ fontSize:22,opacity:window.location.pathname===item.path?1:0.5 }}>{item.icon}</span>
+              <span style={{ fontSize:10,color:window.location.pathname===item.path?"#c084fc":"#475569",fontWeight:window.location.pathname===item.path?700:400 }}>{item.label}</span>
+            </button>
           ))}
         </div>
       )}
