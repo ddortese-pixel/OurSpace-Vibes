@@ -1,115 +1,103 @@
 import { useState, useEffect, useRef } from "react";
-import { Message, Profile } from "../api/entities";
+import { Message, Profile, Notification } from "../api/entities";
 import { useNavigate } from "react-router-dom";
 
-function injectGA(measurementId) {
-  if (document.getElementById(`ga-${measurementId}`)) return;
-  const s1 = document.createElement("script");
-  s1.id = `ga-${measurementId}`; s1.async = true;
-  s1.src = `https://www.googletagmanager.com/gtag/js?id=${measurementId}`;
-  document.head.appendChild(s1);
+function injectGA(id) {
+  if (document.getElementById(`ga-${id}`)) return;
+  const s1 = document.createElement("script"); s1.id = `ga-${id}`; s1.async = true;
+  s1.src = `https://www.googletagmanager.com/gtag/js?id=${id}`; document.head.appendChild(s1);
   const s2 = document.createElement("script");
-  s2.innerHTML = `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag("js",new Date());gtag("config","${measurementId}");`;
+  s2.innerHTML = `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag("js",new Date());gtag("config","${id}");`;
   document.head.appendChild(s2);
 }
 
+function getMyEmail() { return localStorage.getItem("os2_email") || null; }
+function getMyName()  { return localStorage.getItem("os2_name")  || "Guest"; }
+function isLoggedIn() { return !!localStorage.getItem("os2_email"); }
+function getConvoId(a,b) { return [a,b].sort().join("__"); }
+
 const NAV = [
-  { icon: "🏠", label: "Home", path: "/Home" },
-  { icon: "🔍", label: "Discover", path: "/Discover" },
-  { icon: "✉️", label: "Messages", path: "/Messages" },
-  { icon: "🔔", label: "Alerts", path: "/Notifications" },
-  { icon: "👤", label: "Me", path: "/MyProfile" },
+  { icon:"🏠", label:"Feed",     path:"/Home" },
+  { icon:"🔍", label:"Discover", path:"/Discover" },
+  { icon:"✉️", label:"Messages", path:"/Messages" },
+  { icon:"🔔", label:"Alerts",   path:"/Notifications" },
+  { icon:"👤", label:"Profile",  path:"/MyProfile" },
 ];
 
-function getMyEmail() { return localStorage.getItem("os2_email") || null; }
-function getMyName() { return localStorage.getItem("os2_name") || "Guest"; }
-function isLoggedIn() { return !!localStorage.getItem("os2_email"); }
-function getConvoId(a, b) { return [a, b].sort().join("__"); }
-
 export default function Messages() {
-  const [profiles, setProfiles] = useState([]);
-  const [messages, setMessages] = useState([]);
-  const [activeConvo, setActiveConvo] = useState(null);
-  const [draft, setDraft] = useState("");
-  const [sending, setSending] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const bottomRef = useRef(null);
-  const navigate = useNavigate();
-  const myEmail = getMyEmail();
-  const loggedIn = isLoggedIn();
+  const [profiles,     setProfiles]     = useState([]);
+  const [messages,     setMessages]     = useState([]);
+  const [activeConvo,  setActiveConvo]  = useState(null);
+  const [draft,        setDraft]        = useState("");
+  const [sending,      setSending]      = useState(false);
+  const [loading,      setLoading]      = useState(true);
+  const [loggedIn]   = useState(isLoggedIn());
+  const [myEmail]    = useState(getMyEmail());
+  const bottomRef    = useRef(null);
+  const navigate     = useNavigate();
 
   useEffect(() => {
     injectGA("G-1N8GD2WM6L");
-    if (!loggedIn) return; // guests see gate below, don't load data
-    loadAll();
+    if (loggedIn) loadAll();
+    else setLoading(false);
   }, []);
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    bottomRef.current?.scrollIntoView({ behavior:"smooth" });
   }, [messages, activeConvo]);
 
   const loadAll = async () => {
     setLoading(true);
     try {
       const [msgs, profs] = await Promise.all([
-        Message.list("-created_date").catch(() => []),
-        Profile.list().catch(() => []),
+        Message.filter({ sender_email: myEmail }).catch(()=>[]),
+        Profile.list().catch(()=>[]),
       ]);
-      setMessages(msgs || []);
-      setProfiles(profs || []);
+      // Also get messages received
+      const received = await Message.filter({ receiver_email: myEmail }).catch(()=>[]);
+      const allMsgs = [...msgs, ...received].filter((m,i,arr)=>arr.findIndex(x=>x.id===m.id)===i);
+      allMsgs.sort((a,b)=>new Date(a.created_date)-new Date(b.created_date));
+      setMessages(allMsgs);
+      setProfiles(profs);
     } catch(e) { console.error(e); }
     setLoading(false);
   };
 
-  // Gate: not logged in
-  if (!loggedIn) {
-    return (
-      <div style={{ minHeight:"100vh",background:"#0d0d1a",color:"#f0f0f0",fontFamily:"'Segoe UI',sans-serif",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:16,padding:32,textAlign:"center" }}>
-        <div style={{ fontSize:64 }}>🔒</div>
-        <div style={{ fontSize:22,fontWeight:800 }}>Private Messages</div>
-        <div style={{ color:"#64748b",fontSize:15,maxWidth:280 }}>Sign in to send and receive end-to-end encrypted messages.</div>
-        <button onClick={() => navigate("/Onboarding")} style={{ padding:"12px 28px",background:"linear-gradient(135deg,#c084fc,#22d3ee)",border:"none",borderRadius:24,color:"#000",fontWeight:800,fontSize:15,cursor:"pointer",marginTop:8 }}>Get Started</button>
-        <button onClick={() => navigate("/Home")} style={{ background:"none",border:"1px solid #2a2a45",borderRadius:24,color:"#94a3b8",padding:"10px 24px",cursor:"pointer",fontSize:14 }}>← Back to Feed</button>
-        <div style={{ position:"fixed",bottom:0,left:0,right:0,background:"#0b0b1ef5",backdropFilter:"blur(16px)",borderTop:"1px solid #1e1e3a",display:"flex",justifyContent:"space-around",padding:"10px 0 12px" }}>
-          {NAV.map(item => (
-            <button key={item.path} onClick={() => navigate(item.path)}
-              style={{ background:"none",border:"none",cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:3,padding:"4px 12px" }}>
-              <span style={{ fontSize:22,opacity:window.location.pathname===item.path?1:0.5 }}>{item.icon}</span>
-              <span style={{ fontSize:10,color:window.location.pathname===item.path?"#c084fc":"#475569",fontWeight:window.location.pathname===item.path?700:400 }}>{item.label}</span>
-            </button>
-          ))}
-        </div>
-      </div>
-    );
-  }
-
   // Build conversation list
   const convos = {};
   messages.forEach(m => {
-    const other = m.sender_email === myEmail ? m.receiver_email : m.sender_email;
-    if (!convos[other]) convos[other] = { email: other, latest: m, unread: 0 };
-    if (!m.is_read && m.receiver_email === myEmail) convos[other].unread++;
+    const other = m.sender_email===myEmail ? m.receiver_email : m.sender_email;
+    if (!convos[other]) convos[other] = { email:other, latest:m, unread:0 };
+    else if (new Date(m.created_date) > new Date(convos[other].latest.created_date)) convos[other].latest = m;
+    if (!m.is_read && m.receiver_email===myEmail) convos[other].unread++;
   });
   profiles.forEach(p => {
-    if (p.user_email !== myEmail && !convos[p.user_email]) {
-      convos[p.user_email] = { email: p.user_email, latest: null, unread: 0 };
-    }
+    if (p.user_email!==myEmail && !convos[p.user_email])
+      convos[p.user_email] = { email:p.user_email, latest:null, unread:0 };
   });
-  const convoList = Object.values(convos).sort((a, b) => {
+  const convoList = Object.values(convos).sort((a,b)=>{
     const at = a.latest?.created_date ? new Date(a.latest.created_date) : 0;
     const bt = b.latest?.created_date ? new Date(b.latest.created_date) : 0;
     return bt - at;
   });
 
-  const getProfile = (email) => profiles.find(p => p.user_email === email);
+  const getProfile = (email) => profiles.find(p=>p.user_email===email);
+
   const convoMessages = activeConvo
-    ? messages.filter(m => getConvoId(m.sender_email, m.receiver_email) === getConvoId(myEmail, activeConvo))
-        .sort((a, b) => new Date(a.created_date) - new Date(b.created_date))
+    ? messages.filter(m=>getConvoId(m.sender_email,m.receiver_email)===getConvoId(myEmail,activeConvo))
+        .sort((a,b)=>new Date(a.created_date)-new Date(b.created_date))
     : [];
-  const activeProfile = activeConvo ? getProfile(activeConvo) : null;
+
+  const openConvo = async (email) => {
+    setActiveConvo(email);
+    // Mark received messages as read
+    const unread = messages.filter(m=>m.receiver_email===myEmail&&m.sender_email===email&&!m.is_read);
+    await Promise.all(unread.map(m=>Message.update(m.id,{is_read:true}).catch(()=>{}))).catch(()=>{});
+    setMessages(prev=>prev.map(m=>m.sender_email===email&&m.receiver_email===myEmail?{...m,is_read:true}:m));
+  };
 
   const sendMessage = async () => {
-    if (!draft.trim() || !activeConvo) return;
+    if (!draft.trim()||!activeConvo) return;
     setSending(true);
     try {
       const msg = await Message.create({
@@ -118,107 +106,140 @@ export default function Messages() {
         sender_name: getMyName(),
         content: draft.trim(),
         is_read: false,
-        conversation_id: getConvoId(myEmail, activeConvo),
+        conversation_id: getConvoId(myEmail,activeConvo),
       });
-      setMessages(prev => [...prev, msg]);
+      setMessages(prev=>[...prev,msg]);
       setDraft("");
+      await Notification.create({
+        user_email: activeConvo,
+        from_email: myEmail,
+        from_name: getMyName(),
+        type: "message",
+        message: `${getMyName()} sent you a message`,
+        is_read: false,
+      }).catch(()=>{});
     } catch(e) { console.error(e); }
     setSending(false);
   };
 
+  const activeProfile = activeConvo ? getProfile(activeConvo) : null;
+
+  if (!loggedIn) return (
+    <div style={{ minHeight:"100vh",background:"#0d0d1a",color:"#f0f0f0",fontFamily:"'Segoe UI',sans-serif",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:20,padding:32,textAlign:"center",paddingBottom:80 }}>
+      <div style={{ fontSize:64 }}>🔒</div>
+      <div style={{ fontWeight:900,fontSize:24 }}>Messages are Private</div>
+      <div style={{ color:"#64748b",fontSize:14,maxWidth:280,lineHeight:1.6 }}>Sign in to send and receive end-to-end encrypted messages.</div>
+      <button onClick={()=>navigate("/OurSpaceOnboarding")} style={{ padding:"12px 32px",background:"linear-gradient(135deg,#c084fc,#22d3ee)",border:"none",borderRadius:20,color:"#000",fontWeight:700,fontSize:15,cursor:"pointer" }}>Join OurSpace →</button>
+    </div>
+  );
+
   return (
     <div style={{ minHeight:"100vh",background:"#0d0d1a",color:"#f0f0f0",fontFamily:"'Segoe UI',sans-serif",display:"flex",flexDirection:"column",paddingBottom:60 }}>
-      {!activeConvo ? (
+
+      {/* CONVO LIST */}
+      {!activeConvo && (
         <>
           <div style={{ position:"sticky",top:0,zIndex:100,background:"#0d0d1aee",backdropFilter:"blur(12px)",borderBottom:"1px solid #2a2a45",padding:"14px 16px" }}>
             <div style={{ fontWeight:900,fontSize:20,background:"linear-gradient(90deg,#c084fc,#22d3ee)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent" }}>✉️ Messages</div>
             <div style={{ fontSize:12,color:"#64748b",marginTop:2 }}>🔒 End-to-end encrypted</div>
           </div>
           <div style={{ maxWidth:600,margin:"0 auto",width:"100%",padding:"12px 16px" }}>
-            {loading && <div style={{ textAlign:"center",padding:32,color:"#64748b" }}>Loading...</div>}
-            {!loading && convoList.length === 0 && (
+            {loading && <div style={{ textAlign:"center",padding:32,color:"#64748b" }}>⏳ Loading messages...</div>}
+            {!loading && convoList.length===0 && (
               <div style={{ textAlign:"center",padding:40,color:"#64748b" }}>
-                <div style={{ fontSize:40,marginBottom:12 }}>✉️</div>
-                <div style={{ fontSize:16,fontWeight:700,marginBottom:8 }}>No messages yet</div>
-                <div style={{ fontSize:14,marginBottom:16 }}>Find someone in Discover to start a chat!</div>
-                <button onClick={() => navigate("/Discover")} style={{ padding:"10px 24px",background:"linear-gradient(135deg,#c084fc,#22d3ee)",border:"none",borderRadius:24,color:"#000",fontWeight:700,cursor:"pointer" }}>Browse People</button>
+                <div style={{ fontSize:48,marginBottom:12 }}>✉️</div>
+                <div style={{ fontWeight:700,marginBottom:6 }}>No messages yet</div>
+                <div style={{ fontSize:13 }}>Visit someone's profile and send a message!</div>
+                <button onClick={()=>navigate("/Discover")} style={{ marginTop:14,padding:"9px 22px",background:"linear-gradient(135deg,#c084fc,#22d3ee)",border:"none",borderRadius:20,color:"#000",fontWeight:700,cursor:"pointer",fontSize:13 }}>Browse People →</button>
               </div>
             )}
-            {convoList.map(convo => {
-              const prof = getProfile(convo.email);
+            {!loading && convoList.map(c => {
+              const prof = getProfile(c.email);
               return (
-                <div key={convo.email} onClick={() => setActiveConvo(convo.email)}
-                  style={{ display:"flex",alignItems:"center",gap:14,padding:"14px 0",borderBottom:"1px solid #2a2a4520",cursor:"pointer" }}>
-                  <div style={{ width:50,height:50,borderRadius:"50%",background:"linear-gradient(135deg,#c084fc,#22d3ee)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,fontWeight:700,flexShrink:0,overflow:"hidden",position:"relative" }}>
-                    {prof?.avatar_url
-                      ? <img src={prof.avatar_url} alt="" style={{ width:"100%",height:"100%",objectFit:"cover" }} />
-                      : (prof?.display_name?.[0] || convo.email[0]?.toUpperCase() || "?")}
-                    {prof?.is_online && <div style={{ position:"absolute",bottom:2,right:2,width:10,height:10,borderRadius:"50%",background:"#4ade80",border:"2px solid #0d0d1a" }} />}
+                <div key={c.email} onClick={() => openConvo(c.email)}
+                  style={{ background:"#16162a",border:"1px solid #2a2a45",borderRadius:14,padding:14,marginBottom:10,cursor:"pointer",display:"flex",gap:12,alignItems:"center" }}>
+                  <div style={{ width:48,height:48,borderRadius:"50%",background:"linear-gradient(135deg,#c084fc,#22d3ee)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:19,fontWeight:700,flexShrink:0,overflow:"hidden",position:"relative" }}>
+                    {prof?.avatar_url?<img src={prof.avatar_url} alt="" style={{ width:"100%",height:"100%",objectFit:"cover" }} onError={e=>e.target.style.display="none"} />:(prof?.display_name?.[0]||c.email[0].toUpperCase())}
+                    {prof?.is_online&&<div style={{ position:"absolute",bottom:1,right:1,width:10,height:10,borderRadius:"50%",background:"#4ade80",border:"2px solid #0d0d1a" }}/>}
                   </div>
                   <div style={{ flex:1,minWidth:0 }}>
-                    <div style={{ fontWeight:700,fontSize:15 }}>{prof?.display_name || convo.email}</div>
-                    {convo.latest && <div style={{ color:"#64748b",fontSize:13,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" }}>{convo.latest.content?.slice(0,60)}</div>}
-                    {!convo.latest && <div style={{ color:"#64748b",fontSize:13 }}>No messages yet — say hi!</div>}
+                    <div style={{ fontWeight:700,fontSize:14 }}>{prof?.display_name||c.email}</div>
+                    {c.latest && <div style={{ color:"#64748b",fontSize:13,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" }}>{c.latest.sender_email===myEmail?"You: ":""}{c.latest.content}</div>}
                   </div>
-                  {convo.unread > 0 && (
-                    <div style={{ background:"#c084fc",color:"#fff",borderRadius:"50%",width:20,height:20,display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:700,flexShrink:0 }}>{convo.unread}</div>
-                  )}
+                  <div style={{ display:"flex",flexDirection:"column",alignItems:"flex-end",gap:4,flexShrink:0 }}>
+                    {c.latest && <div style={{ fontSize:11,color:"#475569" }}>{new Date(c.latest.created_date).toLocaleDateString("en-US",{month:"short",day:"numeric"})}</div>}
+                    {c.unread>0 && <div style={{ background:"#c084fc",color:"#000",borderRadius:"50%",width:20,height:20,fontSize:11,display:"flex",alignItems:"center",justifyContent:"center",fontWeight:700 }}>{c.unread}</div>}
+                  </div>
                 </div>
               );
             })}
           </div>
         </>
-      ) : (
+      )}
+
+      {/* CONVERSATION VIEW */}
+      {activeConvo && (
         <div style={{ display:"flex",flexDirection:"column",height:"100vh" }}>
           <div style={{ position:"sticky",top:0,zIndex:100,background:"#0d0d1aee",backdropFilter:"blur(12px)",borderBottom:"1px solid #2a2a45",padding:"12px 16px",display:"flex",alignItems:"center",gap:12 }}>
-            <button onClick={() => setActiveConvo(null)} style={{ background:"none",border:"none",color:"#94a3b8",fontSize:20,cursor:"pointer" }}>←</button>
-            <div style={{ width:36,height:36,borderRadius:"50%",background:"linear-gradient(135deg,#c084fc,#22d3ee)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,fontWeight:700,overflow:"hidden" }}>
-              {activeProfile?.avatar_url
-                ? <img src={activeProfile.avatar_url} alt="" style={{ width:"100%",height:"100%",objectFit:"cover" }} />
-                : (activeProfile?.display_name?.[0] || "?")}
+            <button onClick={()=>setActiveConvo(null)} style={{ background:"none",border:"none",color:"#94a3b8",fontSize:20,cursor:"pointer",padding:"4px 8px 4px 0" }}>←</button>
+            <div style={{ width:38,height:38,borderRadius:"50%",background:"linear-gradient(135deg,#c084fc,#22d3ee)",display:"flex",alignItems:"center",justifyContent:"center",fontWeight:700,flexShrink:0,overflow:"hidden" }}>
+              {activeProfile?.avatar_url?<img src={activeProfile.avatar_url} alt="" style={{ width:"100%",height:"100%",objectFit:"cover" }} onError={e=>e.target.style.display="none"} />:(activeProfile?.display_name?.[0]||activeConvo[0].toUpperCase())}
             </div>
-            <div>
-              <div style={{ fontWeight:700,fontSize:15 }}>{activeProfile?.display_name || activeConvo}</div>
-              {activeProfile?.is_online && <div style={{ color:"#4ade80",fontSize:11 }}>● Online</div>}
+            <div style={{ flex:1 }}>
+              <div style={{ fontWeight:700,fontSize:15 }}>{activeProfile?.display_name||activeConvo}</div>
+              <div style={{ fontSize:11,color:"#64748b" }}>🔒 E2EE · {activeProfile?.is_online?"Online":"Offline"}</div>
             </div>
-            <div style={{ marginLeft:"auto",fontSize:11,color:"#64748b" }}>🔒 Encrypted</div>
           </div>
-
-          <div style={{ flex:1,overflowY:"auto",padding:"16px",display:"flex",flexDirection:"column",gap:8 }}>
-            {convoMessages.length === 0 && (
-              <div style={{ textAlign:"center",padding:32,color:"#64748b" }}>Start a conversation with {activeProfile?.display_name || activeConvo}. 👋</div>
+          <div style={{ flex:1,overflowY:"auto",padding:"16px",paddingBottom:80 }}>
+            {convoMessages.length===0 && (
+              <div style={{ textAlign:"center",padding:32,color:"#64748b" }}>
+                <div style={{ fontSize:32,marginBottom:8 }}>🔒</div>
+                <div style={{ fontSize:13 }}>This conversation is end-to-end encrypted.<br/>Send the first message!</div>
+              </div>
             )}
-            {convoMessages.map(m => (
-              <div key={m.id} style={{ display:"flex",justifyContent:m.sender_email===myEmail?"flex-end":"flex-start" }}>
-                <div style={{ maxWidth:"75%",background:m.sender_email===myEmail?"linear-gradient(135deg,#c084fc,#818cf8)":"#16162a",color:"#fff",borderRadius:m.sender_email===myEmail?"18px 18px 4px 18px":"18px 18px 18px 4px",padding:"10px 14px",fontSize:14,lineHeight:1.5 }}>
-                  {m.content}
-                  <div style={{ fontSize:10,color:m.sender_email===myEmail?"#ffffff80":"#64748b",marginTop:4,textAlign:"right" }}>
-                    {m.created_date ? new Date(m.created_date).toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"}) : ""}
+            {convoMessages.map(m => {
+              const isMine = m.sender_email===myEmail;
+              return (
+                <div key={m.id} style={{ display:"flex",justifyContent:isMine?"flex-end":"flex-start",marginBottom:8 }}>
+                  <div style={{ maxWidth:"72%",background:isMine?"linear-gradient(135deg,#c084fc,#7c3aed)":"#16162a",borderRadius:isMine?"16px 16px 4px 16px":"16px 16px 16px 4px",padding:"10px 14px",color:isMine?"#fff":"#f0f0f0",fontSize:14,lineHeight:1.5,border:isMine?"none":"1px solid #2a2a45" }}>
+                    <div>{m.content}</div>
+                    <div style={{ fontSize:10,color:isMine?"#ffffff80":"#475569",marginTop:4,textAlign:"right" }}>
+                      {m.created_date?new Date(m.created_date).toLocaleTimeString("en-US",{hour:"2-digit",minute:"2-digit"}):""}
+                      {isMine&&(m.is_read?" · ✓✓":" · ✓")}
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
             <div ref={bottomRef} />
           </div>
-
-          <div style={{ padding:"12px 16px",borderTop:"1px solid #2a2a45",background:"#0d0d1a",display:"flex",gap:10,alignItems:"center",paddingBottom:16 }}>
-            <input value={draft} onChange={e => setDraft(e.target.value)} onKeyDown={e => e.key==="Enter"&&!e.shiftKey&&sendMessage()}
-              placeholder="Message..." style={{ flex:1,background:"#16162a",border:"1px solid #2a2a45",borderRadius:24,color:"#f0f0f0",fontSize:14,padding:"10px 16px",outline:"none" }} />
-            <button onClick={sendMessage} disabled={sending || !draft.trim()}
-              style={{ width:40,height:40,borderRadius:"50%",background:draft.trim()?"linear-gradient(135deg,#c084fc,#22d3ee)":"#2a2a45",border:"none",color:"#fff",fontSize:18,cursor:draft.trim()?"pointer":"default" }}>↗</button>
+          {/* Input */}
+          <div style={{ position:"fixed",bottom:0,left:0,right:0,background:"#0d0d1a",borderTop:"1px solid #2a2a45",padding:"12px 16px",display:"flex",gap:10,alignItems:"center" }}>
+            <input value={draft} onChange={e=>setDraft(e.target.value)}
+              onKeyDown={e=>{ if(e.key==="Enter"&&!e.shiftKey){ e.preventDefault(); sendMessage(); }}}
+              placeholder="Send a message... (Enter to send)"
+              style={{ flex:1,background:"#16162a",border:"1px solid #2a2a45",borderRadius:24,color:"#f0f0f0",fontSize:14,padding:"11px 16px",outline:"none" }} />
+            <button onClick={sendMessage} disabled={!draft.trim()||sending}
+              style={{ width:44,height:44,borderRadius:"50%",background:draft.trim()?"linear-gradient(135deg,#c084fc,#22d3ee)":"#2a2a45",border:"none",color:draft.trim()?"#000":"#64748b",fontSize:20,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0 }}>
+              {sending?"⏳":"➤"}
+            </button>
           </div>
         </div>
       )}
 
+      {/* Bottom Nav (only shown in list view) */}
       {!activeConvo && (
-        <div style={{ position:"fixed",bottom:0,left:0,right:0,background:"#0b0b1ef5",backdropFilter:"blur(16px)",borderTop:"1px solid #1e1e3a",display:"flex",justifyContent:"space-around",padding:"10px 0 12px",zIndex:100 }}>
-          {NAV.map(item => (
-            <button key={item.path} onClick={() => navigate(item.path)}
-              style={{ background:"none",border:"none",cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:3,padding:"4px 12px" }}>
-              <span style={{ fontSize:22,opacity:window.location.pathname===item.path?1:0.5 }}>{item.icon}</span>
-              <span style={{ fontSize:10,color:window.location.pathname===item.path?"#c084fc":"#475569",fontWeight:window.location.pathname===item.path?700:400 }}>{item.label}</span>
-            </button>
-          ))}
+        <div style={{ position:"fixed",bottom:0,left:0,right:0,background:"#0d0d1aee",backdropFilter:"blur(12px)",borderTop:"1px solid #2a2a45",display:"flex",justifyContent:"space-around",padding:"10px 0 12px",zIndex:100 }}>
+          {NAV.map(item => {
+            const active = window.location.pathname===item.path;
+            return (
+              <button key={item.path} onClick={()=>navigate(item.path)}
+                style={{ background:"none",border:"none",cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:3,padding:"4px 10px" }}>
+                <span style={{ fontSize:22,opacity:active?1:0.5 }}>{item.icon}</span>
+                <span style={{ fontSize:10,color:active?"#c084fc":"#475569",fontWeight:active?700:400 }}>{item.label}</span>
+              </button>
+            );
+          })}
         </div>
       )}
     </div>
