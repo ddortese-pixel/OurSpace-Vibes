@@ -1,10 +1,31 @@
 import { useEffect, useState } from "react";
 
+function injectGA(measurementId) {
+  if (document.getElementById(`ga-${measurementId}`)) return;
+  const script1 = document.createElement("script");
+  script1.id = `ga-${measurementId}`;
+  script1.async = true;
+  script1.src = `https://www.googletagmanager.com/gtag/js?id=${measurementId}`;
+  document.head.appendChild(script1);
+
+  const script2 = document.createElement("script");
+  script2.innerHTML = `
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', '${measurementId}');
+  `;
+  document.head.appendChild(script2);
+}
+
 export default function SplashScreen() {
   const [visible, setVisible] = useState(true);
   const [fadeOut, setFadeOut] = useState(false);
 
   useEffect(() => {
+    // Inject Legacy Circle GA4 tag
+    injectGA("G-HEWR0ZB5G8");
+
     const fadeTimer = setTimeout(() => setFadeOut(true), 3200);
     const hideTimer = setTimeout(() => setVisible(false), 4000);
     return () => {

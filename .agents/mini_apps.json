@@ -2,44 +2,50 @@
   "app_id": "69d9c17c15f11af079841768",
   "slug": "legacy-circle",
   "pages": {
+    "Discover": {
+      "title": "Discover"
+    },
+    "PostGenerator": {
+      "title": "PostGenerator"
+    },
+    "TermsOfService": {
+      "title": "TermsOfService"
+    },
+    "Messages": {
+      "title": "Messages"
+    },
+    "OurSpacePrivacyPolicy": {
+      "title": "OurSpacePrivacyPolicy"
+    },
+    "MyProfile": {
+      "title": "MyProfile"
+    },
+    "SeedOurSpace": {
+      "title": "SeedOurSpace"
+    },
     "AppStoreReadiness": {
       "title": "AppStoreReadiness"
     },
     "LaunchTracker": {
       "title": "LaunchTracker"
     },
+    "ReportContent": {
+      "title": "ReportContent"
+    },
     "OurSpaceOnboarding": {
       "title": "OurSpaceOnboarding"
-    },
-    "OurSpacePrivacyPolicy": {
-      "title": "OurSpacePrivacyPolicy"
-    },
-    "PostGenerator": {
-      "title": "PostGenerator"
-    },
-    "PrivacyPolicy": {
-      "title": "PrivacyPolicy"
-    },
-    "SeedOurSpace": {
-      "title": "SeedOurSpace"
-    },
-    "SplashScreen": {
-      "title": "SplashScreen"
-    },
-    "Discover": {
-      "title": "Discover"
     },
     "Home": {
       "title": "Home"
     },
-    "Messages": {
-      "title": "Messages"
-    },
-    "MyProfile": {
-      "title": "MyProfile"
-    },
     "Notifications": {
       "title": "Notifications"
+    },
+    "Settings": {
+      "title": "Settings"
+    },
+    "SplashScreen": {
+      "title": "SplashScreen"
     },
     "Onboarding": {
       "title": "Onboarding"
@@ -47,14 +53,8 @@
     "Profile": {
       "title": "Profile"
     },
-    "ReportContent": {
-      "title": "ReportContent"
-    },
-    "Settings": {
-      "title": "Settings"
-    },
-    "TermsOfService": {
-      "title": "TermsOfService"
+    "PrivacyPolicy": {
+      "title": "PrivacyPolicy"
     }
   }
 }
