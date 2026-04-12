@@ -155,6 +155,31 @@ export default function Home() {
     link.href = OS2_ICON;
     document.title = "OurSpace 2.0";
     loadInitial();
+
+    // SEO meta tags for search engine indexing
+    const setMeta = (nameOrProp, content, isProp = false) => {
+      const attr = isProp ? "property" : "name";
+      let el = document.querySelector(`meta[${attr}="${nameOrProp}"]`);
+      if (!el) { el = document.createElement("meta"); el.setAttribute(attr, nameOrProp); document.head.appendChild(el); }
+      el.setAttribute("content", content);
+    };
+    setMeta("description", "Authentic social networking for real humans. Chronological feed, E2EE messaging, customizable profiles. Join 10,000+ members. No algorithms. No manipulation.");
+    setMeta("keywords", "social network, authentic, no algorithm, chronological feed, privacy, encrypted messaging, friends, community, social media alternative");
+    setMeta("robots", "index, follow");
+    setMeta("og:title", "OurSpace 2.0 — Your Space. No Algorithms.", true);
+    setMeta("og:description", "Real social networking. No manipulation, no bots. Chronological feed, E2EE messaging, 10,000+ real humans.", true);
+    setMeta("og:image", "https://media.base44.com/images/public/69d9b8416964fe31ae3f9932/e4d2dbdb5_generated_image.png", true);
+    setMeta("og:url", "https://our-space-vibes.base44.app/Home", true);
+    setMeta("og:type", "website", true);
+    setMeta("og:site_name", "OurSpace 2.0", true);
+    setMeta("twitter:card", "summary_large_image");
+    setMeta("twitter:title", "OurSpace 2.0 — Your Space. No Algorithms.");
+    setMeta("twitter:description", "Real social networking. Chronological feed, E2EE messaging, no manipulation. Join 10,000+ real humans.");
+    setMeta("twitter:image", "https://media.base44.com/images/public/69d9b8416964fe31ae3f9932/e4d2dbdb5_generated_image.png");
+    // Canonical link
+    let canon = document.querySelector("link[rel='canonical']");
+    if (!canon) { canon = document.createElement("link"); canon.rel = "canonical"; document.head.appendChild(canon); }
+    canon.href = "https://our-space-vibes.base44.app/Home";
   }, []);
 
   useEffect(() => {

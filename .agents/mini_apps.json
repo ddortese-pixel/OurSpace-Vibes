@@ -5,11 +5,11 @@
     "AppStoreReadiness": {
       "title": "AppStoreReadiness"
     },
+    "DiagnosticDashboard": {
+      "title": "DiagnosticDashboard"
+    },
     "Discover": {
       "title": "Discover"
-    },
-    "Home": {
-      "title": "Home"
     },
     "LaunchTracker": {
       "title": "LaunchTracker"
@@ -56,8 +56,8 @@
     "TermsOfService": {
       "title": "TermsOfService"
     },
-    "DiagnosticDashboard": {
-      "title": "DiagnosticDashboard"
+    "Home": {
+      "title": "Home"
     }
   }
 }
