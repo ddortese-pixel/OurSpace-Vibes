@@ -30,7 +30,7 @@ export default function ReportContent() {
       // Dynamic import to avoid build-time errors if entity doesn't exist in this app context
       const { ReportedContent } = await import("../api/entities");
       await ReportedContent.create({
-        reporter_email: (await User.me().catch(()=>({email:"anonymous@ourspace.app"}))).email,
+        reporter_email: localStorage.getItem("os2_email") || "anonymous@ourspace.app",
         content_type: contentType,
         content_id: contentId,
         reason,

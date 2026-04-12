@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Message, Profile, User } from "../api/entities";
+import { Message, Profile } from "../api/entities";
 import { useNavigate } from "react-router-dom";
 
 function injectGA(measurementId) {
@@ -22,7 +22,9 @@ const NAV = [
   { icon: "👤", path: "/MyProfile" },
 ];
 
-// myEmail set dynamically via User.me()
+function getMyEmail() { return localStorage.getItem("os2_email") || "guest@ourspace.app"; }
+function getMyName() { return localStorage.getItem("os2_name") || "Guest"; }
+function isLoggedIn() { return !!localStorage.getItem("os2_email"); }
 
 function getConvoId(a, b) {
   return [a, b].sort().join("__");
@@ -35,7 +37,7 @@ export default function Messages() {
   const [draft, setDraft] = useState("");
   const [sending, setSending] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [myEmail, setMyEmail] = useState("guest@ourspace.app");
+  const myEmail = getMyEmail();
   const bottomRef = useRef(null);
   const navigate = useNavigate();
 
@@ -46,8 +48,7 @@ export default function Messages() {
   const loadAll = async () => {
     setLoading(true);
     try {
-      const [msgs, profs, currentUser] = await Promise.all([Message.list("-created_date"), Profile.list(), User.me().catch(()=>null)]);
-      if (currentUser) setMyEmail(currentUser.email);
+      const [msgs, profs] = await Promise.all([Message.list("-created_date"), Profile.list()]);
       setMessages(msgs);
       setProfiles(profs);
     } catch(e){ console.error(e); }

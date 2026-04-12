@@ -24,6 +24,8 @@ export default function Onboarding() {
   const [parentEmail, setParentEmail] = useState("");
   const [parentConsent, setParentConsent] = useState(false);
   const [vibe, setVibe] = useState("purple-pink");
+  const [displayName, setDisplayName] = useState("");
+  const [emailInput, setEmailInput] = useState("");
   const navigate = useNavigate();
 
   const checkAge = () => {
@@ -40,7 +42,14 @@ export default function Onboarding() {
     setAgeError(""); setStep(1);
   };
 
-  const finish = () => navigate("/Home");
+  const finish = () => {
+    const email = emailInput.trim() || `user_${Date.now()}@ourspace.app`;
+    const name = displayName.trim() || "OurSpace User";
+    localStorage.setItem("os2_email", email);
+    localStorage.setItem("os2_name", name);
+    localStorage.setItem("os2_vibe", vibe);
+    navigate("/Home");
+  };
 
   const S = { minHeight:"100vh",background:"#0d0d1a",color:"#f0f0f0",fontFamily:"'Segoe UI',sans-serif",display:"flex",flexDirection:"column",justifyContent:"center",padding:"32px 24px",maxWidth:480,margin:"0 auto" };
   const Btn = (props) => <button {...props} style={{ width:"100%",padding:"14px",background:"linear-gradient(135deg,#c084fc,#22d3ee)",border:"none",borderRadius:12,color:"#000",fontWeight:800,fontSize:16,cursor:"pointer",marginTop:16,...props.style }}>{props.children}</button>;
@@ -110,12 +119,32 @@ export default function Onboarding() {
               </div>
             ))}
           </div>
-          <Btn onClick={()=>setStep(2)}>Pick Your Vibe →</Btn>
+          <Btn onClick={()=>setStep(2)}>Next: Create Identity →</Btn>
         </div>
       )}
 
-      {/* Step 2: Theme */}
+      {/* Step 2: Your Identity */}
       {step===2&&(
+        <div>
+          <div style={{ textAlign:"center",marginBottom:24 }}>
+            <div style={{ fontSize:48,marginBottom:12 }}>✨</div>
+            <h2 style={{ fontSize:22,fontWeight:900,margin:"0 0 6px" }}>Create your identity</h2>
+            <p style={{ color:"#64748b",fontSize:14,margin:0 }}>This is how others will know you.</p>
+          </div>
+          <div style={{ marginBottom:14 }}>
+            <label style={{ color:"#94a3b8",fontSize:13,display:"block",marginBottom:6 }}>Display Name</label>
+            <Input placeholder="e.g. Nova, Jordan, The Real MVP..." value={displayName} onChange={e=>setDisplayName(e.target.value)} />
+          </div>
+          <div style={{ marginBottom:24 }}>
+            <label style={{ color:"#94a3b8",fontSize:13,display:"block",marginBottom:6 }}>Email (for login)</label>
+            <Input type="email" placeholder="you@email.com" value={emailInput} onChange={e=>setEmailInput(e.target.value)} />
+          </div>
+          <Btn onClick={()=>{if(!displayName.trim()){return;}setStep(3);}}>Next: Pick Your Vibe →</Btn>
+        </div>
+      )}
+
+      {/* Step 3: Theme */}
+      {step===3&&(
         <div>
           <div style={{ textAlign:"center",marginBottom:24 }}>
             <div style={{ fontSize:48,marginBottom:12 }}>🎨</div>

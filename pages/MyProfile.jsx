@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Profile, Post, WallPost, User } from "../api/entities";
+import { Profile, Post, WallPost } from "../api/entities";
 import { useNavigate } from "react-router-dom";
 
 function injectGA(id) {
@@ -11,13 +11,16 @@ function injectGA(id) {
   document.head.appendChild(s2);
 }
 
+function getMyEmail() { return localStorage.getItem("os2_email") || null; }
+function getMyName() { return localStorage.getItem("os2_name") || "Guest"; }
+function isLoggedIn() { return !!localStorage.getItem("os2_email"); }
+
 const NAV = [
   {icon:"🏠",path:"/Home"},{icon:"🔍",path:"/Discover"},{icon:"✉️",path:"/Messages"},
   {icon:"🔔",path:"/Notifications"},{icon:"👤",path:"/MyProfile"},
 ];
 
 export default function MyProfile() {
-  const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
   const [posts, setPosts] = useState([]);
   const [wall, setWall] = useState([]);
@@ -27,31 +30,24 @@ export default function MyProfile() {
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const loggedIn = isLoggedIn();
+  const myEmail = getMyEmail();
 
-  useEffect(() => { injectGA("G-1N8GD2WM6L"); loadProfile(); }, []);
+  useEffect(() => { injectGA("G-1N8GD2WM6L"); if (loggedIn) loadProfile(); else setLoading(false); }, []);
 
   const loadProfile = async () => {
     setLoading(true);
     try {
-      const currentUser = await User.me().catch(() => null);
-      setUser(currentUser);
-
-      if (!currentUser) {
-        setLoading(false);
-        return;
-      }
-
-      const profiles = await Profile.filter({ user_email: currentUser.email });
+      const profiles = await Profile.filter({ user_email: myEmail });
       const me = profiles[0] || null;
       setProfile(me);
-      setForm(me || { user_email: currentUser.email, display_name: currentUser.full_name });
-
+      setForm(me || { user_email: myEmail, display_name: getMyName() });
       const [myPosts, myWall] = await Promise.all([
-        Post.filter({ author_email: currentUser.email }),
-        WallPost.filter({ profile_email: currentUser.email }),
+        Post.filter({ author_email: myEmail }),
+        WallPost.filter({ profile_email: myEmail }),
       ]);
-      setPosts(myPosts);
-      setWall(myWall);
+      setPosts(myPosts || []);
+      setWall(myWall || []);
     } catch(e) { console.error(e); }
     setLoading(false);
   };
@@ -59,7 +55,7 @@ export default function MyProfile() {
   const saveProfile = async () => {
     setSaving(true);
     try {
-      const data = { ...form, user_email: user.email };
+      const data = { ...form, user_email: myEmail };
       if (profile?.id) {
         const updated = await Profile.update(profile.id, data);
         setProfile(updated);
@@ -67,6 +63,7 @@ export default function MyProfile() {
         const created = await Profile.create(data);
         setProfile(created);
       }
+      if (form.display_name) localStorage.setItem("os2_name", form.display_name);
       setEditing(false);
     } catch(e) { console.error(e); }
     setSaving(false);
@@ -80,16 +77,16 @@ export default function MyProfile() {
     "teal-blue":"linear-gradient(135deg,#14b8a6,#3b82f6)",
     "default":"linear-gradient(135deg,#c084fc,#22d3ee)",
   };
-
   const bg = GRADIENTS[profile?.background_gradient] || GRADIENTS.default;
 
   if (loading) return <div style={{ minHeight:"100vh",background:"#0d0d1a",color:"#64748b",display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'Segoe UI',sans-serif" }}>Loading profile...</div>;
 
-  if (!user) return (
-    <div style={{ minHeight:"100vh",background:"#0d0d1a",color:"#f0f0f0",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",fontFamily:"'Segoe UI',sans-serif",gap:16 }}>
-      <div style={{ fontSize:48 }}>👤</div>
-      <div style={{ fontWeight:700,fontSize:20 }}>Sign in to see your profile</div>
-      <button onClick={()=>navigate("/Onboarding")} style={{ padding:"12px 32px",background:"linear-gradient(135deg,#c084fc,#22d3ee)",border:"none",borderRadius:12,color:"#000",fontWeight:700,fontSize:16,cursor:"pointer" }}>Get Started</button>
+  if (!loggedIn) return (
+    <div style={{ minHeight:"100vh",background:"#0d0d1a",color:"#f0f0f0",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",fontFamily:"'Segoe UI',sans-serif",gap:16,padding:24 }}>
+      <div style={{ fontSize:64 }}>👤</div>
+      <div style={{ fontWeight:700,fontSize:22 }}>Your space is waiting</div>
+      <div style={{ color:"#64748b",fontSize:14,textAlign:"center" }}>Join OurSpace 2.0 to create your profile, post, and connect.</div>
+      <button onClick={()=>navigate("/Onboarding")} style={{ padding:"14px 36px",background:"linear-gradient(135deg,#c084fc,#22d3ee)",border:"none",borderRadius:12,color:"#000",fontWeight:700,fontSize:16,cursor:"pointer" }}>Get Started</button>
     </div>
   );
 
@@ -104,11 +101,11 @@ export default function MyProfile() {
       <div style={{ maxWidth:600,margin:"0 auto",padding:"0 16px" }}>
         <div style={{ display:"flex",alignItems:"flex-end",gap:16,marginTop:-36,marginBottom:16 }}>
           <div style={{ width:80,height:80,borderRadius:"50%",background:"linear-gradient(135deg,#c084fc,#22d3ee)",border:"3px solid #0d0d1a",display:"flex",alignItems:"center",justifyContent:"center",fontSize:32,fontWeight:700,flexShrink:0,overflow:"hidden" }}>
-            {profile?.avatar_url?<img src={profile.avatar_url} alt="" style={{ width:"100%",height:"100%",objectFit:"cover" }} />:(profile?.display_name?.[0]||user?.full_name?.[0]||"👤")}
+            {profile?.avatar_url?<img src={profile.avatar_url} alt="" style={{ width:"100%",height:"100%",objectFit:"cover" }} />:(profile?.display_name?.[0]||getMyName()?.[0]||"👤")}
           </div>
           <div style={{ flex:1,paddingBottom:4 }}>
-            <div style={{ fontWeight:900,fontSize:20 }}>{profile?.display_name||user?.full_name||"Your Name"}</div>
-            <div style={{ color:"#94a3b8",fontSize:13 }}>{profile?.headline||user?.email}</div>
+            <div style={{ fontWeight:900,fontSize:20 }}>{profile?.display_name||getMyName()}</div>
+            <div style={{ color:"#94a3b8",fontSize:13 }}>{profile?.headline||myEmail}</div>
           </div>
         </div>
 
@@ -161,27 +158,25 @@ export default function MyProfile() {
           ))}
         </div>
 
-        {tab==="posts"&&(
-          posts.length===0
-            ?<div style={{ textAlign:"center",padding:32,color:"#64748b" }}>No posts yet. Share something!</div>
-            :posts.map(p=>(
-              <div key={p.id} style={{ background:"#16162a",border:"1px solid #2a2a45",borderRadius:12,padding:16,marginBottom:12 }}>
-                {p.content&&<div style={{ fontSize:14,color:"#cbd5e1",lineHeight:1.6 }}>{p.content}</div>}
-                {p.image_url&&<img src={p.image_url} alt="" style={{ width:"100%",borderRadius:8,marginTop:8 }} onError={e=>e.target.style.display="none"} />}
-                <div style={{ color:"#64748b",fontSize:11,marginTop:8 }}>{p.created_date?new Date(p.created_date).toLocaleDateString():""} · 💜 {p.likes_count||0}</div>
-              </div>
-            ))
+        {tab==="posts"&&(posts.length===0
+          ?<div style={{ textAlign:"center",padding:32,color:"#64748b" }}>No posts yet. Share something!</div>
+          :posts.map(p=>(
+            <div key={p.id} style={{ background:"#16162a",border:"1px solid #2a2a45",borderRadius:12,padding:16,marginBottom:12 }}>
+              {p.content&&<div style={{ fontSize:14,color:"#cbd5e1",lineHeight:1.6 }}>{p.content}</div>}
+              {p.image_url&&<img src={p.image_url} alt="" style={{ width:"100%",borderRadius:8,marginTop:8 }} onError={e=>e.target.style.display="none"} />}
+              <div style={{ color:"#64748b",fontSize:11,marginTop:8 }}>{p.created_date?new Date(p.created_date).toLocaleDateString():""} · 💜 {p.likes_count||0}</div>
+            </div>
+          ))
         )}
 
-        {tab==="wall"&&(
-          wall.length===0
-            ?<div style={{ textAlign:"center",padding:32,color:"#64748b" }}>No wall posts yet.</div>
-            :wall.map(w=>(
-              <div key={w.id} style={{ background:"#16162a",border:"1px solid #2a2a45",borderRadius:12,padding:16,marginBottom:12 }}>
-                <div style={{ fontWeight:700,fontSize:13,marginBottom:4,color:"#c084fc" }}>{w.author_name}</div>
-                <div style={{ fontSize:14,color:"#cbd5e1" }}>{w.content}</div>
-              </div>
-            ))
+        {tab==="wall"&&(wall.length===0
+          ?<div style={{ textAlign:"center",padding:32,color:"#64748b" }}>No wall posts yet.</div>
+          :wall.map(w=>(
+            <div key={w.id} style={{ background:"#16162a",border:"1px solid #2a2a45",borderRadius:12,padding:16,marginBottom:12 }}>
+              <div style={{ fontWeight:700,fontSize:13,marginBottom:4,color:"#c084fc" }}>{w.author_name}</div>
+              <div style={{ fontSize:14,color:"#cbd5e1" }}>{w.content}</div>
+            </div>
+          ))
         )}
       </div>
 

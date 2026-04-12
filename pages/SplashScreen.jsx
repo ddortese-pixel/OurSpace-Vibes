@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 function injectGA(measurementId) {
   if (document.getElementById(`ga-${measurementId}`)) return;
@@ -7,34 +8,24 @@ function injectGA(measurementId) {
   script1.async = true;
   script1.src = `https://www.googletagmanager.com/gtag/js?id=${measurementId}`;
   document.head.appendChild(script1);
-
   const script2 = document.createElement("script");
-  script2.innerHTML = `
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', '${measurementId}');
-  `;
+  script2.innerHTML = `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag("js",new Date());gtag("config","${measurementId}");`;
   document.head.appendChild(script2);
 }
 
 export default function SplashScreen() {
-  const [visible, setVisible] = useState(true);
   const [fadeOut, setFadeOut] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    // Inject Legacy Circle GA4 tag
     injectGA("G-HEWR0ZB5G8");
-
     const fadeTimer = setTimeout(() => setFadeOut(true), 3200);
-    const hideTimer = setTimeout(() => setVisible(false), 4000);
+    const navTimer = setTimeout(() => navigate("/Home"), 4000);
     return () => {
       clearTimeout(fadeTimer);
-      clearTimeout(hideTimer);
+      clearTimeout(navTimer);
     };
   }, []);
-
-  if (!visible) return null;
 
   return (
     <div
@@ -52,7 +43,7 @@ export default function SplashScreen() {
         overflow: "hidden"
       }}
     >
-      {/* Full background image - latest cinematic image */}
+      {/* Full background image */}
       <img
         src="https://media.base44.com/images/public/69d9b8416964fe31ae3f9932/adc11af19_copilot_image_1775430901724.jpg"
         alt="The Legacy Circle"

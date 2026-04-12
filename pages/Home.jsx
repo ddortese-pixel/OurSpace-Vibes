@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from "react";
 import { Post, Profile, Story, Notification } from "../api/entities";
-import { User } from "../api/entities";
 import { useNavigate } from "react-router-dom";
 
 function injectGA(id) {
@@ -11,6 +10,11 @@ function injectGA(id) {
   s2.innerHTML=`window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag("js",new Date());gtag("config","${id}");`;
   document.head.appendChild(s2);
 }
+
+// Local identity helpers — stored in localStorage
+function getMyEmail() { return localStorage.getItem("os2_email") || null; }
+function getMyName() { return localStorage.getItem("os2_name") || "Guest"; }
+function isLoggedIn() { return !!localStorage.getItem("os2_email"); }
 
 const PAGE_SIZE = 20;
 
@@ -45,7 +49,6 @@ function PostCard({ post, currentUserEmail, onLike, onNavigate }) {
 }
 
 export default function Home() {
-  const [user, setUser] = useState(null);
   const [posts, setPosts] = useState([]);
   const [stories, setStories] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -56,6 +59,7 @@ export default function Home() {
   const [newPost, setNewPost] = useState("");
   const [posting, setPosting] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [loggedIn, setLoggedIn] = useState(isLoggedIn());
   const navigate = useNavigate();
   const bottomRef = useRef(null);
 
@@ -64,7 +68,6 @@ export default function Home() {
     loadInitial();
   }, []);
 
-  // Infinite scroll observer
   useEffect(() => {
     if (!bottomRef.current) return;
     const obs = new IntersectionObserver(entries => {
@@ -77,18 +80,16 @@ export default function Home() {
   const loadInitial = async () => {
     setLoading(true);
     try {
-      const [currentUser, postsData, storiesData, notifData] = await Promise.all([
-        User.me().catch(() => null),
+      const [postsData, storiesData, notifData] = await Promise.all([
         Post.list("-created_date", PAGE_SIZE, 0),
         Story.list("-created_date"),
         Notification.list(),
       ]);
-      setUser(currentUser);
-      setPosts(postsData);
-      setHasMore(postsData.length === PAGE_SIZE);
+      setPosts(postsData || []);
+      setHasMore((postsData||[]).length === PAGE_SIZE);
       setPage(1);
-      setStories(storiesData.slice(0, 8));
-      setUnreadCount(notifData.filter(n => !n.is_read).length);
+      setStories((storiesData||[]).slice(0, 8));
+      setUnreadCount((notifData||[]).filter(n => !n.is_read).length);
     } catch(e) { console.error(e); }
     setLoading(false);
   };
@@ -98,32 +99,31 @@ export default function Home() {
     setLoadingMore(true);
     try {
       const more = await Post.list("-created_date", PAGE_SIZE, page * PAGE_SIZE);
-      setPosts(prev => [...prev, ...more]);
-      setHasMore(more.length === PAGE_SIZE);
+      setPosts(prev => [...prev, ...(more||[])]);
+      setHasMore((more||[]).length === PAGE_SIZE);
       setPage(p => p + 1);
     } catch(e) { console.error(e); }
     setLoadingMore(false);
   };
 
-  const currentEmail = user?.email || "guest@ourspace.app";
-  const currentName = user?.full_name || "Guest";
-
   const handleLike = async (post) => {
-    const alreadyLiked = Array.isArray(post.liked_by) && post.liked_by.includes(currentEmail);
-    const newLiked = alreadyLiked ? post.liked_by.filter(e => e !== currentEmail) : [...(post.liked_by||[]), currentEmail];
+    if (!loggedIn) { navigate("/Onboarding"); return; }
+    const email = getMyEmail();
+    const alreadyLiked = Array.isArray(post.liked_by) && post.liked_by.includes(email);
+    const newLiked = alreadyLiked ? post.liked_by.filter(e => e !== email) : [...(post.liked_by||[]), email];
     await Post.update(post.id, { liked_by: newLiked, likes_count: newLiked.length });
     setPosts(prev => prev.map(p => p.id === post.id ? {...p, liked_by: newLiked, likes_count: newLiked.length} : p));
   };
 
   const handlePost = async () => {
     if (!newPost.trim()) return;
-    if (!user) { navigate("/Onboarding"); return; }
+    if (!loggedIn) { navigate("/Onboarding"); return; }
     setPosting(true);
     try {
       const created = await Post.create({
         content: newPost.trim(),
-        author_name: currentName,
-        author_email: currentEmail,
+        author_name: getMyName(),
+        author_email: getMyEmail(),
         post_type: "text",
         likes_count: 0,
         comments_count: 0,
@@ -151,7 +151,7 @@ export default function Home() {
           <button onClick={()=>navigate("/Notifications")} style={{ background:"none",border:"none",cursor:"pointer",fontSize:20,position:"relative",color:"white" }}>
             🔔{unreadCount>0&&<span style={{ position:"absolute",top:-4,right:-4,background:"#c084fc",color:"#fff",borderRadius:"50%",width:16,height:16,fontSize:10,display:"flex",alignItems:"center",justifyContent:"center",fontWeight:700 }}>{unreadCount}</span>}
           </button>
-          {!user && <button onClick={()=>navigate("/Onboarding")} style={{ padding:"6px 14px",background:"linear-gradient(135deg,#c084fc,#22d3ee)",border:"none",borderRadius:20,color:"#000",fontWeight:700,fontSize:12,cursor:"pointer" }}>Join</button>}
+          {!loggedIn&&<button onClick={()=>navigate("/Onboarding")} style={{ padding:"6px 14px",background:"linear-gradient(135deg,#c084fc,#22d3ee)",border:"none",borderRadius:20,color:"#000",fontWeight:700,fontSize:12,cursor:"pointer" }}>Join</button>}
         </div>
       </div>
 
@@ -172,10 +172,10 @@ export default function Home() {
         )}
 
         <div style={{ background:"#16162a",border:"1px solid #2a2a45",borderRadius:16,padding:16,marginBottom:20 }}>
-          {!user && <div style={{ color:"#64748b",fontSize:13,marginBottom:8,textAlign:"center" }}>👋 <span style={{ color:"#c084fc",cursor:"pointer",fontWeight:600 }} onClick={()=>navigate("/Onboarding")}>Join OurSpace</span> to post</div>}
+          {!loggedIn&&<div style={{ color:"#64748b",fontSize:13,marginBottom:8,textAlign:"center" }}>👋 <span style={{ color:"#c084fc",cursor:"pointer",fontWeight:600 }} onClick={()=>navigate("/Onboarding")}>Join OurSpace</span> to post</div>}
           <textarea value={newPost} onChange={e=>setNewPost(e.target.value)}
-            onClick={()=>{ if(!user) navigate("/Onboarding"); }}
-            placeholder={user ? "What's on your mind? No algorithm here — your post reaches everyone. 🌐" : "Sign up to start posting..."}
+            onClick={()=>{ if(!loggedIn) navigate("/Onboarding"); }}
+            placeholder={loggedIn?"What's on your mind? No algorithm here. 🌐":"Sign up to start posting..."}
             style={{ width:"100%",background:"transparent",border:"none",color:"#f0f0f0",fontSize:14,resize:"none",outline:"none",minHeight:72,boxSizing:"border-box",fontFamily:"inherit" }} />
           <div style={{ display:"flex",justifyContent:"space-between",alignItems:"center",marginTop:8 }}>
             <div style={{ display:"flex",gap:8 }}>
@@ -188,17 +188,17 @@ export default function Home() {
           </div>
         </div>
 
-        {loading ? (
+        {loading?(
           <div style={{ textAlign:"center",padding:40,color:"#64748b" }}>⏳ Loading the underground feed...</div>
-        ) : filtered.length===0 ? (
+        ):filtered.length===0?(
           <div style={{ textAlign:"center",padding:40,color:"#64748b" }}><div style={{ fontSize:40,marginBottom:12 }}>🌐</div><div>No posts yet. Be the first.</div></div>
-        ) : (
-          filtered.map(post=><PostCard key={post.id} post={post} currentUserEmail={currentEmail} onLike={handleLike} onNavigate={navigate} />)
+        ):(
+          filtered.map(post=><PostCard key={post.id} post={post} currentUserEmail={getMyEmail()} onLike={handleLike} onNavigate={navigate} />)
         )}
 
         <div ref={bottomRef} style={{ height:40,display:"flex",alignItems:"center",justifyContent:"center" }}>
-          {loadingMore && <span style={{ color:"#64748b",fontSize:13 }}>Loading more...</span>}
-          {!hasMore && posts.length>0 && <span style={{ color:"#2a2a45",fontSize:12 }}>— You're all caught up —</span>}
+          {loadingMore&&<span style={{ color:"#64748b",fontSize:13 }}>Loading more...</span>}
+          {!hasMore&&posts.length>0&&<span style={{ color:"#2a2a45",fontSize:12 }}>— You're all caught up —</span>}
         </div>
       </div>
 
