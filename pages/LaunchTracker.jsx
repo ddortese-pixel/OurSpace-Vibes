@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { ProjectMilestone } from "@/api/entities";
+import { ProjectMilestone } from "../api/entities";
 
 const statusColors = {
   "Done": { bg: "#14532d", text: "#4ade80", dot: "#22c55e" },
