@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-const LC_ICON = "https://media.base44.com/images/public/69d9b8416964fe31ae3f9932/f199871d3_generated_image.png";
-const LC_SPLASH = "https://media.base44.com/images/public/69d9b8416964fe31ae3f9932/adc11af19_copilot_image_1775430901724.jpg";
+const OS2_ICON = "https://media.base44.com/images/public/69d9b8416964fe31ae3f9932/7bbdaee82_generated_image.png";
 
 function injectGA(id) {
   if (document.getElementById(`ga-${id}`)) return;
@@ -14,78 +13,90 @@ function injectGA(id) {
 }
 
 export default function SplashScreen() {
-  const [phase, setPhase] = useState("show"); // show → fadeOut → done
+  const [phase, setPhase] = useState("in"); // in → hold → out
   const navigate = useNavigate();
 
   useEffect(() => {
-    injectGA("G-HEWR0ZB5G8");
-    // Set meta for Legacy Circle
+    injectGA("G-1N8GD2WM6L");
     let link = document.querySelector("link[rel~='icon']");
     if (!link) { link = document.createElement("link"); link.rel = "icon"; document.head.appendChild(link); }
-    link.href = LC_ICON;
-    document.title = "The Legacy Circle";
-
-    const t1 = setTimeout(() => setPhase("fadeOut"), 3000);
-    const t2 = setTimeout(() => navigate("/LaunchTracker"), 3800);
-    return () => { clearTimeout(t1); clearTimeout(t2); };
+    link.href = OS2_ICON;
+    document.title = "OurSpace 2.0";
+    const t1 = setTimeout(() => setPhase("hold"), 400);
+    const t2 = setTimeout(() => setPhase("out"), 2800);
+    const t3 = setTimeout(() => {
+      const hasOnboarded = localStorage.getItem("os2_email");
+      navigate(hasOnboarded ? "/Home" : "/OurSpaceOnboarding");
+    }, 3500);
+    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
   }, []);
 
   return (
     <div style={{
-      position: "fixed", inset: 0, zIndex: 9999, overflow: "hidden",
-      background: "#0a0a0a",
-      opacity: phase === "fadeOut" ? 0 : 1,
-      transition: "opacity 0.8s ease-in-out",
+      position: "fixed", inset: 0, zIndex: 9999,
+      background: "radial-gradient(ellipse at 50% 40%, #2a0a4a 0%, #0d0d1a 60%, #000 100%)",
       display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+      opacity: phase === "out" ? 0 : 1,
+      transform: phase === "in" ? "scale(1.04)" : "scale(1)",
+      transition: phase === "out" ? "opacity 0.7s ease-in-out, transform 0.7s" : "opacity 0.4s, transform 0.4s",
     }}>
-      {/* Background image */}
-      <img src={LC_SPLASH} alt="The Legacy Circle"
-        style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "center top" }}
-        onError={e => e.target.style.display = "none"}
-      />
+      {/* Ambient glow */}
+      <div style={{ position: "absolute", width: 400, height: 400, borderRadius: "50%", background: "radial-gradient(circle, #c084fc30 0%, transparent 70%)", top: "50%", left: "50%", transform: "translate(-50%,-50%)", pointerEvents: "none" }} />
 
-      {/* Top overlay */}
-      <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "30%", background: "linear-gradient(to bottom, rgba(0,0,0,0.6), transparent)" }} />
-
-      {/* App icon — top center */}
-      <div style={{ position: "absolute", top: 52, zIndex: 10, textAlign: "center" }}>
-        <img src={LC_ICON} alt="Legacy Circle Icon"
-          style={{ width: 96, height: 96, borderRadius: 22, boxShadow: "0 8px 40px rgba(245,158,11,0.55)", border: "2px solid rgba(253,230,138,0.4)" }}
-          onError={e => e.target.style.display = "none"}
-        />
+      {/* Icon */}
+      <div style={{
+        width: 110, height: 110, borderRadius: 28, overflow: "hidden",
+        boxShadow: "0 0 60px #c084fc60, 0 20px 60px #00000080",
+        border: "2px solid rgba(192,132,252,0.4)",
+        marginBottom: 24,
+        transform: phase === "hold" ? "scale(1)" : "scale(0.85)",
+        transition: "transform 0.5s cubic-bezier(0.34,1.56,0.64,1)",
+      }}>
+        <img src={OS2_ICON} alt="OurSpace 2.0" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
       </div>
 
-      {/* Bottom gradient */}
-      <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: "45%", background: "linear-gradient(to top, rgba(0,0,0,0.9) 0%, transparent 100%)" }} />
+      {/* Wordmark */}
+      <h1 style={{
+        fontSize: 36, fontWeight: 900, margin: "0 0 8px", letterSpacing: -0.5,
+        background: "linear-gradient(90deg, #c084fc, #ffffff, #22d3ee)",
+        WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
+        opacity: phase === "in" ? 0 : 1, transform: phase === "in" ? "translateY(12px)" : "translateY(0)",
+        transition: "opacity 0.5s 0.15s, transform 0.5s 0.15s",
+      }}>OurSpace 2.0</h1>
 
-      {/* Bottom content */}
-      <div style={{ position: "absolute", bottom: 52, textAlign: "center", zIndex: 10, padding: "0 24px" }}>
-        <h1 style={{
-          fontSize: 34, fontWeight: 900, margin: "0 0 6px",
-          background: "linear-gradient(90deg,#f59e0b,#fde68a,#f59e0b)",
-          WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
-          fontFamily: "'Georgia', serif", letterSpacing: 2,
-        }}>THE LEGACY CIRCLE</h1>
-        <p style={{ color: "#fde68a", fontSize: 12, margin: "0 0 24px", letterSpacing: 3, textTransform: "uppercase", opacity: 0.85 }}>
-          Courage · Curiosity · Creativity · Unity
-        </p>
-        {/* Loading dots */}
-        <div style={{ display: "flex", justifyContent: "center", gap: 8 }}>
-          {[0, 1, 2].map(i => (
-            <div key={i} style={{
-              width: 8, height: 8, borderRadius: "50%", background: "#f59e0b",
-              animation: `lcPulse 1.2s ease-in-out ${i * 0.2}s infinite`,
-            }} />
+      <p style={{
+        color: "rgba(148,163,184,0.8)", fontSize: 13, letterSpacing: 2, textTransform: "uppercase", margin: "0 0 32px",
+        opacity: phase === "in" ? 0 : 1, transform: phase === "in" ? "translateY(8px)" : "translateY(0)",
+        transition: "opacity 0.5s 0.25s, transform 0.5s 0.25s",
+      }}>Your Space. No Algorithms.</p>
+
+      {/* User count badge */}
+      <div style={{
+        display: "flex", alignItems: "center", gap: 8,
+        background: "rgba(192,132,252,0.12)", border: "1px solid rgba(192,132,252,0.25)",
+        borderRadius: 24, padding: "8px 18px",
+        opacity: phase === "in" ? 0 : 1,
+        transition: "opacity 0.5s 0.4s",
+      }}>
+        <div style={{ display: "flex" }}>
+          {["#f59e0b","#22d3ee","#c084fc","#4ade80"].map((c, i) => (
+            <div key={i} style={{ width: 20, height: 20, borderRadius: "50%", background: c, marginLeft: i === 0 ? 0 : -6, border: "2px solid #0d0d1a", fontSize: 9, display: "flex", alignItems: "center", justifyContent: "center", color: "#000", fontWeight: 700 }}>
+              {["J","M","S","A"][i]}
+            </div>
           ))}
         </div>
+        <span style={{ color: "#c084fc", fontSize: 13, fontWeight: 700 }}>10,000+ members</span>
       </div>
 
-      <style>{`
-        @keyframes lcPulse {
-          0%, 100% { opacity: 0.3; transform: scale(0.8); }
-          50% { opacity: 1; transform: scale(1.2); }
-        }
-      `}</style>
+      {/* Loading bar */}
+      <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: 3, background: "#1e1e3a", overflow: "hidden" }}>
+        <div style={{
+          height: "100%", background: "linear-gradient(90deg,#c084fc,#22d3ee)",
+          width: phase === "hold" || phase === "out" ? "100%" : "0%",
+          transition: "width 2.4s ease-in-out",
+          borderRadius: "0 2px 2px 0",
+        }} />
+      </div>
     </div>
   );
 }

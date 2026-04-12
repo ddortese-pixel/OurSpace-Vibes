@@ -5,11 +5,17 @@
     "AppStoreReadiness": {
       "title": "AppStoreReadiness"
     },
+    "ContentPolicy": {
+      "title": "ContentPolicy"
+    },
     "DiagnosticDashboard": {
       "title": "DiagnosticDashboard"
     },
     "Discover": {
       "title": "Discover"
+    },
+    "Home": {
+      "title": "Home"
     },
     "LaunchTracker": {
       "title": "LaunchTracker"
@@ -55,12 +61,6 @@
     },
     "TermsOfService": {
       "title": "TermsOfService"
-    },
-    "Home": {
-      "title": "Home"
-    },
-    "ContentPolicy": {
-      "title": "ContentPolicy"
     }
   }
 }
