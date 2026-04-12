@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
-import { ProjectMilestone } from "../api/entities";
+
+const MILESTONES_URL = "https://legacy-circle-ae3f9932.base44.app/functions/getMilestones";
+const UPDATE_URL = "https://legacy-circle-ae3f9932.base44.app/functions/updateMilestone";
 
 const statusColors = {
   "Done": { bg: "#14532d", text: "#4ade80", dot: "#22c55e" },
@@ -23,16 +25,25 @@ export default function LaunchTracker() {
   const [updating, setUpdating] = useState(null);
 
   useEffect(() => {
-    ProjectMilestone.list().then(data => {
-      setMilestones(data);
-      setLoading(false);
-    });
+    fetch(MILESTONES_URL, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({}) })
+      .then(r => r.json())
+      .then(data => {
+        setMilestones(data.milestones || []);
+        setLoading(false);
+      })
+      .catch(e => { console.error(e); setLoading(false); });
   }, []);
 
   const updateStatus = async (id, newStatus) => {
     setUpdating(id);
-    await ProjectMilestone.update(id, { status: newStatus });
-    setMilestones(prev => prev.map(m => m.id === id ? { ...m, status: newStatus } : m));
+    try {
+      await fetch(UPDATE_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, status: newStatus }),
+      });
+      setMilestones(prev => prev.map(m => m.id === id ? { ...m, status: newStatus } : m));
+    } catch(e) { console.error(e); }
     setUpdating(null);
   };
 
@@ -65,7 +76,9 @@ export default function LaunchTracker() {
       {/* Milestones by category */}
       <div style={{ maxWidth: 720, margin: "0 auto", padding: "32px 16px" }}>
         {loading ? (
-          <div style={{ textAlign: "center", color: "#94a3b8", padding: 48 }}>Loading...</div>
+          <div style={{ textAlign: "center", color: "#94a3b8", padding: 48 }}>Loading milestones...</div>
+        ) : milestones.length === 0 ? (
+          <div style={{ textAlign: "center", color: "#94a3b8", padding: 48 }}>No milestones found.</div>
         ) : (
           categories.map(cat => {
             const items = milestones.filter(m => m.category === cat);
@@ -79,10 +92,7 @@ export default function LaunchTracker() {
                   const s = statusColors[m.status] || statusColors["Not Started"];
                   return (
                     <div key={m.id} style={{ background: "#1e1e32", borderRadius: 12, border: "1px solid #2d2d50", padding: "16px 20px", marginBottom: 10, display: "flex", alignItems: "flex-start", gap: 16 }}>
-                      {/* Status dot */}
                       <div style={{ width: 10, height: 10, borderRadius: "50%", background: s.dot, marginTop: 5, flexShrink: 0 }} />
-
-                      {/* Content */}
                       <div style={{ flex: 1 }}>
                         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 8 }}>
                           <span style={{ fontWeight: 600, fontSize: 15, color: m.status === "Done" ? "#4ade80" : "#f0f0f0" }}>{m.title}</span>
@@ -93,25 +103,24 @@ export default function LaunchTracker() {
                         {m.notes && <p style={{ color: "#94a3b8", fontSize: 13, margin: "6px 0 0" }}>{m.notes}</p>}
                         {m.due_date && <p style={{ color: "#475569", fontSize: 12, margin: "4px 0 0" }}>📅 {m.due_date}</p>}
 
-                        {/* Status updater */}
                         <div style={{ marginTop: 10, display: "flex", gap: 6, flexWrap: "wrap" }}>
-                          {["Not Started", "In Progress", "Done", "Blocked"].map(s => (
+                          {["Not Started", "In Progress", "Done", "Blocked"].map(status => (
                             <button
-                              key={s}
-                              onClick={() => updateStatus(m.id, s)}
-                              disabled={updating === m.id || m.status === s}
+                              key={status}
+                              onClick={() => updateStatus(m.id, status)}
+                              disabled={updating === m.id || m.status === status}
                               style={{
-                                background: m.status === s ? statusColors[s].bg : "transparent",
-                                color: m.status === s ? statusColors[s].text : "#475569",
-                                border: `1px solid ${m.status === s ? statusColors[s].dot : "#2d2d50"}`,
+                                background: m.status === status ? statusColors[status].bg : "transparent",
+                                color: m.status === status ? statusColors[status].text : "#475569",
+                                border: `1px solid ${m.status === status ? statusColors[status].dot : "#2d2d50"}`,
                                 borderRadius: 20,
                                 padding: "2px 10px",
                                 fontSize: 11,
-                                cursor: m.status === s ? "default" : "pointer",
-                                fontWeight: m.status === s ? 700 : 400
-                              }}
+                                cursor: m.status === status ? "default" : "pointer",
+                                fontWeight: m.status === status ? 700 : 400
+              }}
                             >
-                              {s}
+                              {status}
                             </button>
                           ))}
                         </div>
