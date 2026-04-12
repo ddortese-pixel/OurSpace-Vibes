@@ -5,8 +5,7 @@ import { useNavigate } from "react-router-dom";
 function injectGA(measurementId) {
   if (document.getElementById(`ga-${measurementId}`)) return;
   const s1 = document.createElement("script");
-  s1.id = `ga-${measurementId}`;
-  s1.async = true;
+  s1.id = `ga-${measurementId}`; s1.async = true;
   s1.src = `https://www.googletagmanager.com/gtag/js?id=${measurementId}`;
   document.head.appendChild(s1);
   const s2 = document.createElement("script");
@@ -15,20 +14,17 @@ function injectGA(measurementId) {
 }
 
 const NAV = [
-  { icon: "🏠", path: "/Home" },
-  { icon: "🔍", path: "/Discover" },
-  { icon: "✉️", path: "/Messages" },
-  { icon: "🔔", path: "/Notifications" },
-  { icon: "👤", path: "/MyProfile" },
+  { icon: "🏠", label: "Home", path: "/Home" },
+  { icon: "🔍", label: "Discover", path: "/Discover" },
+  { icon: "✉️", label: "Messages", path: "/Messages" },
+  { icon: "🔔", label: "Alerts", path: "/Notifications" },
+  { icon: "👤", label: "Me", path: "/MyProfile" },
 ];
 
-function getMyEmail() { return localStorage.getItem("os2_email") || "guest@ourspace.app"; }
+function getMyEmail() { return localStorage.getItem("os2_email") || null; }
 function getMyName() { return localStorage.getItem("os2_name") || "Guest"; }
 function isLoggedIn() { return !!localStorage.getItem("os2_email"); }
-
-function getConvoId(a, b) {
-  return [a, b].sort().join("__");
-}
+function getConvoId(a, b) { return [a, b].sort().join("__"); }
 
 export default function Messages() {
   const [profiles, setProfiles] = useState([]);
@@ -37,23 +33,51 @@ export default function Messages() {
   const [draft, setDraft] = useState("");
   const [sending, setSending] = useState(false);
   const [loading, setLoading] = useState(true);
-  const myEmail = getMyEmail();
   const bottomRef = useRef(null);
   const navigate = useNavigate();
+  const myEmail = getMyEmail();
+  const loggedIn = isLoggedIn();
 
-  useEffect(() => { loadAll(); }, []);
+  useEffect(() => {
     injectGA("G-1N8GD2WM6L");
-  useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages, activeConvo]);
+    if (!loggedIn) return; // guests see gate below, don't load data
+    loadAll();
+  }, []);
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages, activeConvo]);
 
   const loadAll = async () => {
     setLoading(true);
     try {
-      const [msgs, profs] = await Promise.all([Message.list("-created_date"), Profile.list()]);
-      setMessages(msgs);
-      setProfiles(profs);
-    } catch(e){ console.error(e); }
+      const [msgs, profs] = await Promise.all([
+        Message.list("-created_date").catch(() => []),
+        Profile.list().catch(() => []),
+      ]);
+      setMessages(msgs || []);
+      setProfiles(profs || []);
+    } catch(e) { console.error(e); }
     setLoading(false);
   };
+
+  // Gate: not logged in
+  if (!loggedIn) {
+    return (
+      <div style={{ minHeight:"100vh",background:"#0d0d1a",color:"#f0f0f0",fontFamily:"'Segoe UI',sans-serif",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:16,padding:32,textAlign:"center" }}>
+        <div style={{ fontSize:64 }}>🔒</div>
+        <div style={{ fontSize:22,fontWeight:800 }}>Private Messages</div>
+        <div style={{ color:"#64748b",fontSize:15,maxWidth:280 }}>Sign in to send and receive end-to-end encrypted messages.</div>
+        <button onClick={() => navigate("/Onboarding")} style={{ padding:"12px 28px",background:"linear-gradient(135deg,#c084fc,#22d3ee)",border:"none",borderRadius:24,color:"#000",fontWeight:800,fontSize:15,cursor:"pointer",marginTop:8 }}>Get Started</button>
+        <button onClick={() => navigate("/Home")} style={{ background:"none",border:"1px solid #2a2a45",borderRadius:24,color:"#94a3b8",padding:"10px 24px",cursor:"pointer",fontSize:14 }}>← Back to Feed</button>
+        <div style={{ position:"fixed",bottom:0,left:0,right:0,background:"#0d0d1a",borderTop:"1px solid #2a2a45",display:"flex",justifyContent:"space-around",padding:"10px 0" }}>
+          {NAV.map(item => (
+            <button key={item.path} onClick={() => navigate(item.path)} style={{ background:"none",border:"none",color:window.location.pathname===item.path?"#c084fc":"#64748b",cursor:"pointer",fontSize:22 }}>{item.icon}</button>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   // Build conversation list
   const convos = {};
@@ -62,26 +86,23 @@ export default function Messages() {
     if (!convos[other]) convos[other] = { email: other, latest: m, unread: 0 };
     if (!m.is_read && m.receiver_email === myEmail) convos[other].unread++;
   });
-  // Also include profiles with no messages yet
   profiles.forEach(p => {
     if (p.user_email !== myEmail && !convos[p.user_email]) {
       convos[p.user_email] = { email: p.user_email, latest: null, unread: 0 };
     }
   });
-  const convoList = Object.values(convos).sort((a,b) => {
+  const convoList = Object.values(convos).sort((a, b) => {
     const at = a.latest?.created_date ? new Date(a.latest.created_date) : 0;
     const bt = b.latest?.created_date ? new Date(b.latest.created_date) : 0;
     return bt - at;
   });
 
   const getProfile = (email) => profiles.find(p => p.user_email === email);
-
   const convoMessages = activeConvo
-    ? messages.filter(m => {
-        const cid = getConvoId(m.sender_email, m.receiver_email);
-        return cid === getConvoId(myEmail, activeConvo);
-      }).sort((a,b) => new Date(a.created_date) - new Date(b.created_date))
+    ? messages.filter(m => getConvoId(m.sender_email, m.receiver_email) === getConvoId(myEmail, activeConvo))
+        .sort((a, b) => new Date(a.created_date) - new Date(b.created_date))
     : [];
+  const activeProfile = activeConvo ? getProfile(activeConvo) : null;
 
   const sendMessage = async () => {
     if (!draft.trim() || !activeConvo) return;
@@ -90,18 +111,16 @@ export default function Messages() {
       const msg = await Message.create({
         sender_email: myEmail,
         receiver_email: activeConvo,
-        sender_name: "You",
+        sender_name: getMyName(),
         content: draft.trim(),
         is_read: false,
         conversation_id: getConvoId(myEmail, activeConvo),
       });
       setMessages(prev => [...prev, msg]);
       setDraft("");
-    } catch(e){ console.error(e); }
+    } catch(e) { console.error(e); }
     setSending(false);
   };
-
-  const activeProfile = activeConvo ? getProfile(activeConvo) : null;
 
   return (
     <div style={{ minHeight:"100vh",background:"#0d0d1a",color:"#f0f0f0",fontFamily:"'Segoe UI',sans-serif",display:"flex",flexDirection:"column",paddingBottom:60 }}>
@@ -113,21 +132,33 @@ export default function Messages() {
           </div>
           <div style={{ maxWidth:600,margin:"0 auto",width:"100%",padding:"12px 16px" }}>
             {loading && <div style={{ textAlign:"center",padding:32,color:"#64748b" }}>Loading...</div>}
-            {!loading && convoList.length===0 && <div style={{ textAlign:"center",padding:40,color:"#64748b" }}><div style={{ fontSize:40,marginBottom:12 }}>✉️</div><div>No messages yet.<br/>Find someone in Discover to chat!</div></div>}
+            {!loading && convoList.length === 0 && (
+              <div style={{ textAlign:"center",padding:40,color:"#64748b" }}>
+                <div style={{ fontSize:40,marginBottom:12 }}>✉️</div>
+                <div style={{ fontSize:16,fontWeight:700,marginBottom:8 }}>No messages yet</div>
+                <div style={{ fontSize:14,marginBottom:16 }}>Find someone in Discover to start a chat!</div>
+                <button onClick={() => navigate("/Discover")} style={{ padding:"10px 24px",background:"linear-gradient(135deg,#c084fc,#22d3ee)",border:"none",borderRadius:24,color:"#000",fontWeight:700,cursor:"pointer" }}>Browse People</button>
+              </div>
+            )}
             {convoList.map(convo => {
               const prof = getProfile(convo.email);
               return (
                 <div key={convo.email} onClick={() => setActiveConvo(convo.email)}
                   style={{ display:"flex",alignItems:"center",gap:14,padding:"14px 0",borderBottom:"1px solid #2a2a4520",cursor:"pointer" }}>
                   <div style={{ width:50,height:50,borderRadius:"50%",background:"linear-gradient(135deg,#c084fc,#22d3ee)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,fontWeight:700,flexShrink:0,overflow:"hidden",position:"relative" }}>
-                    {prof?.avatar_url?<img src={prof.avatar_url} alt="" style={{ width:"100%",height:"100%",objectFit:"cover" }} />:(prof?.display_name?.[0]||convo.email[0].toUpperCase())}
-                    {prof?.is_online&&<div style={{ position:"absolute",bottom:2,right:2,width:10,height:10,borderRadius:"50%",background:"#4ade80",border:"2px solid #0d0d1a" }} />}
+                    {prof?.avatar_url
+                      ? <img src={prof.avatar_url} alt="" style={{ width:"100%",height:"100%",objectFit:"cover" }} />
+                      : (prof?.display_name?.[0] || convo.email[0]?.toUpperCase() || "?")}
+                    {prof?.is_online && <div style={{ position:"absolute",bottom:2,right:2,width:10,height:10,borderRadius:"50%",background:"#4ade80",border:"2px solid #0d0d1a" }} />}
                   </div>
                   <div style={{ flex:1,minWidth:0 }}>
-                    <div style={{ fontWeight:700,fontSize:15 }}>{prof?.display_name||convo.email}</div>
+                    <div style={{ fontWeight:700,fontSize:15 }}>{prof?.display_name || convo.email}</div>
                     {convo.latest && <div style={{ color:"#64748b",fontSize:13,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" }}>{convo.latest.content?.slice(0,60)}</div>}
+                    {!convo.latest && <div style={{ color:"#64748b",fontSize:13 }}>No messages yet — say hi!</div>}
                   </div>
-                  {convo.unread>0&&<div style={{ background:"#c084fc",color:"#fff",borderRadius:"50%",width:20,height:20,display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:700,flexShrink:0 }}>{convo.unread}</div>}
+                  {convo.unread > 0 && (
+                    <div style={{ background:"#c084fc",color:"#fff",borderRadius:"50%",width:20,height:20,display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:700,flexShrink:0 }}>{convo.unread}</div>
+                  )}
                 </div>
               );
             })}
@@ -136,25 +167,29 @@ export default function Messages() {
       ) : (
         <div style={{ display:"flex",flexDirection:"column",height:"100vh" }}>
           <div style={{ position:"sticky",top:0,zIndex:100,background:"#0d0d1aee",backdropFilter:"blur(12px)",borderBottom:"1px solid #2a2a45",padding:"12px 16px",display:"flex",alignItems:"center",gap:12 }}>
-            <button onClick={()=>setActiveConvo(null)} style={{ background:"none",border:"none",color:"#94a3b8",fontSize:20,cursor:"pointer" }}>←</button>
+            <button onClick={() => setActiveConvo(null)} style={{ background:"none",border:"none",color:"#94a3b8",fontSize:20,cursor:"pointer" }}>←</button>
             <div style={{ width:36,height:36,borderRadius:"50%",background:"linear-gradient(135deg,#c084fc,#22d3ee)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,fontWeight:700,overflow:"hidden" }}>
-              {activeProfile?.avatar_url?<img src={activeProfile.avatar_url} alt="" style={{ width:"100%",height:"100%",objectFit:"cover" }} />:(activeProfile?.display_name?.[0]||"?")}
+              {activeProfile?.avatar_url
+                ? <img src={activeProfile.avatar_url} alt="" style={{ width:"100%",height:"100%",objectFit:"cover" }} />
+                : (activeProfile?.display_name?.[0] || "?")}
             </div>
             <div>
-              <div style={{ fontWeight:700,fontSize:15 }}>{activeProfile?.display_name||activeConvo}</div>
-              {activeProfile?.is_online&&<div style={{ color:"#4ade80",fontSize:11 }}>● Online</div>}
+              <div style={{ fontWeight:700,fontSize:15 }}>{activeProfile?.display_name || activeConvo}</div>
+              {activeProfile?.is_online && <div style={{ color:"#4ade80",fontSize:11 }}>● Online</div>}
             </div>
             <div style={{ marginLeft:"auto",fontSize:11,color:"#64748b" }}>🔒 Encrypted</div>
           </div>
 
           <div style={{ flex:1,overflowY:"auto",padding:"16px",display:"flex",flexDirection:"column",gap:8 }}>
-            {convoMessages.length===0&&<div style={{ textAlign:"center",padding:32,color:"#64748b" }}>Start a conversation with {activeProfile?.display_name||activeConvo}.</div>}
-            {convoMessages.map(m=>(
+            {convoMessages.length === 0 && (
+              <div style={{ textAlign:"center",padding:32,color:"#64748b" }}>Start a conversation with {activeProfile?.display_name || activeConvo}. 👋</div>
+            )}
+            {convoMessages.map(m => (
               <div key={m.id} style={{ display:"flex",justifyContent:m.sender_email===myEmail?"flex-end":"flex-start" }}>
                 <div style={{ maxWidth:"75%",background:m.sender_email===myEmail?"linear-gradient(135deg,#c084fc,#818cf8)":"#16162a",color:"#fff",borderRadius:m.sender_email===myEmail?"18px 18px 4px 18px":"18px 18px 18px 4px",padding:"10px 14px",fontSize:14,lineHeight:1.5 }}>
                   {m.content}
                   <div style={{ fontSize:10,color:m.sender_email===myEmail?"#ffffff80":"#64748b",marginTop:4,textAlign:"right" }}>
-                    {m.created_date?new Date(m.created_date).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"}):""}
+                    {m.created_date ? new Date(m.created_date).toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"}) : ""}
                   </div>
                 </div>
               </div>
@@ -162,18 +197,19 @@ export default function Messages() {
             <div ref={bottomRef} />
           </div>
 
-          <div style={{ padding:"12px 16px",borderTop:"1px solid #2a2a45",background:"#0d0d1a",display:"flex",gap:10,alignItems:"center",paddingBottom:70 }}>
-            <input value={draft} onChange={e=>setDraft(e.target.value)} onKeyDown={e=>e.key==="Enter"&&!e.shiftKey&&sendMessage()}
+          <div style={{ padding:"12px 16px",borderTop:"1px solid #2a2a45",background:"#0d0d1a",display:"flex",gap:10,alignItems:"center",paddingBottom:16 }}>
+            <input value={draft} onChange={e => setDraft(e.target.value)} onKeyDown={e => e.key==="Enter"&&!e.shiftKey&&sendMessage()}
               placeholder="Message..." style={{ flex:1,background:"#16162a",border:"1px solid #2a2a45",borderRadius:24,color:"#f0f0f0",fontSize:14,padding:"10px 16px",outline:"none" }} />
-            <button onClick={sendMessage} disabled={sending||!draft.trim()} style={{ width:40,height:40,borderRadius:"50%",background:draft.trim()?"linear-gradient(135deg,#c084fc,#22d3ee)":"#2a2a45",border:"none",color:"#fff",fontSize:18,cursor:draft.trim()?"pointer":"default" }}>↗</button>
+            <button onClick={sendMessage} disabled={sending || !draft.trim()}
+              style={{ width:40,height:40,borderRadius:"50%",background:draft.trim()?"linear-gradient(135deg,#c084fc,#22d3ee)":"#2a2a45",border:"none",color:"#fff",fontSize:18,cursor:draft.trim()?"pointer":"default" }}>↗</button>
           </div>
         </div>
       )}
 
       {!activeConvo && (
         <div style={{ position:"fixed",bottom:0,left:0,right:0,background:"#0d0d1a",borderTop:"1px solid #2a2a45",display:"flex",justifyContent:"space-around",padding:"10px 0",zIndex:100 }}>
-          {NAV.map(item=>(
-            <button key={item.path} onClick={()=>navigate(item.path)} style={{ background:"none",border:"none",color:window.location.pathname===item.path?"#c084fc":"#64748b",cursor:"pointer",fontSize:22 }}>{item.icon}</button>
+          {NAV.map(item => (
+            <button key={item.path} onClick={() => navigate(item.path)} style={{ background:"none",border:"none",color:window.location.pathname===item.path?"#c084fc":"#64748b",cursor:"pointer",fontSize:22 }}>{item.icon}</button>
           ))}
         </div>
       )}
