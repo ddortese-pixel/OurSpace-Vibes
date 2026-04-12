@@ -1,28 +1,23 @@
 import { useState, useEffect } from "react";
-import { Profile, Post, WallPost, Friend } from "../api/entities";
+import { Profile, Post, WallPost, User } from "../api/entities";
 import { useNavigate } from "react-router-dom";
 
-function injectGA(measurementId) {
-  if (document.getElementById(`ga-${measurementId}`)) return;
-  const s1 = document.createElement("script");
-  s1.id = `ga-${measurementId}`;
-  s1.async = true;
-  s1.src = `https://www.googletagmanager.com/gtag/js?id=${measurementId}`;
-  document.head.appendChild(s1);
+function injectGA(id) {
+  if (document.getElementById(`ga-${id}`)) return;
+  const s1 = document.createElement("script"); s1.id=`ga-${id}`; s1.async=true;
+  s1.src=`https://www.googletagmanager.com/gtag/js?id=${id}`; document.head.appendChild(s1);
   const s2 = document.createElement("script");
-  s2.innerHTML = `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag("js",new Date());gtag("config","${measurementId}");`;
+  s2.innerHTML=`window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag("js",new Date());gtag("config","${id}");`;
   document.head.appendChild(s2);
 }
 
 const NAV = [
-  { icon: "🏠", path: "/Home" },
-  { icon: "🔍", path: "/Discover" },
-  { icon: "✉️", path: "/Messages" },
-  { icon: "🔔", path: "/Notifications" },
-  { icon: "👤", path: "/MyProfile" },
+  {icon:"🏠",path:"/Home"},{icon:"🔍",path:"/Discover"},{icon:"✉️",path:"/Messages"},
+  {icon:"🔔",path:"/Notifications"},{icon:"👤",path:"/MyProfile"},
 ];
 
 export default function MyProfile() {
+  const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
   const [posts, setPosts] = useState([]);
   const [wall, setWall] = useState([]);
@@ -33,82 +28,98 @@ export default function MyProfile() {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
-  useEffect(() => { loadProfile(); }, []);
-    injectGA("G-1N8GD2WM6L");
+  useEffect(() => { injectGA("G-1N8GD2WM6L"); loadProfile(); }, []);
 
   const loadProfile = async () => {
     setLoading(true);
     try {
-      const profiles = await Profile.list();
+      const currentUser = await User.me().catch(() => null);
+      setUser(currentUser);
+
+      if (!currentUser) {
+        setLoading(false);
+        return;
+      }
+
+      const profiles = await Profile.filter({ user_email: currentUser.email });
       const me = profiles[0] || null;
       setProfile(me);
-      setForm(me || {});
+      setForm(me || { user_email: currentUser.email, display_name: currentUser.full_name });
+
       const [myPosts, myWall] = await Promise.all([
-        Post.filter({ author_email: me?.user_email }),
-        WallPost.filter({ profile_email: me?.user_email }),
+        Post.filter({ author_email: currentUser.email }),
+        WallPost.filter({ profile_email: currentUser.email }),
       ]);
       setPosts(myPosts);
       setWall(myWall);
-    } catch(e){ console.error(e); }
+    } catch(e) { console.error(e); }
     setLoading(false);
   };
 
   const saveProfile = async () => {
     setSaving(true);
     try {
+      const data = { ...form, user_email: user.email };
       if (profile?.id) {
-        const updated = await Profile.update(profile.id, form);
+        const updated = await Profile.update(profile.id, data);
         setProfile(updated);
       } else {
-        const created = await Profile.create({ ...form, user_email: "me@ourspace.app" });
+        const created = await Profile.create(data);
         setProfile(created);
       }
       setEditing(false);
-    } catch(e){ console.error(e); }
+    } catch(e) { console.error(e); }
     setSaving(false);
   };
 
   const GRADIENTS = {
-    "purple-pink": "linear-gradient(135deg,#c084fc,#ec4899)",
-    "orange-red": "linear-gradient(135deg,#f97316,#ef4444)",
-    "green-teal": "linear-gradient(135deg,#22c55e,#14b8a6)",
-    "blue-cyan": "linear-gradient(135deg,#3b82f6,#22d3ee)",
-    "teal-blue": "linear-gradient(135deg,#14b8a6,#3b82f6)",
-    "default": "linear-gradient(135deg,#c084fc,#22d3ee)",
+    "purple-pink":"linear-gradient(135deg,#c084fc,#ec4899)",
+    "orange-red":"linear-gradient(135deg,#f97316,#ef4444)",
+    "green-teal":"linear-gradient(135deg,#22c55e,#14b8a6)",
+    "blue-cyan":"linear-gradient(135deg,#3b82f6,#22d3ee)",
+    "teal-blue":"linear-gradient(135deg,#14b8a6,#3b82f6)",
+    "default":"linear-gradient(135deg,#c084fc,#22d3ee)",
   };
 
   const bg = GRADIENTS[profile?.background_gradient] || GRADIENTS.default;
 
   if (loading) return <div style={{ minHeight:"100vh",background:"#0d0d1a",color:"#64748b",display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'Segoe UI',sans-serif" }}>Loading profile...</div>;
 
+  if (!user) return (
+    <div style={{ minHeight:"100vh",background:"#0d0d1a",color:"#f0f0f0",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",fontFamily:"'Segoe UI',sans-serif",gap:16 }}>
+      <div style={{ fontSize:48 }}>👤</div>
+      <div style={{ fontWeight:700,fontSize:20 }}>Sign in to see your profile</div>
+      <button onClick={()=>navigate("/Onboarding")} style={{ padding:"12px 32px",background:"linear-gradient(135deg,#c084fc,#22d3ee)",border:"none",borderRadius:12,color:"#000",fontWeight:700,fontSize:16,cursor:"pointer" }}>Get Started</button>
+    </div>
+  );
+
   return (
     <div style={{ minHeight:"100vh",background:"#0d0d1a",color:"#f0f0f0",fontFamily:"'Segoe UI',sans-serif",paddingBottom:80 }}>
-      {/* Cover */}
       <div style={{ height:160,background:bg,position:"relative" }}>
-        {profile?.cover_photo && <img src={profile.cover_photo} alt="" style={{ width:"100%",height:"100%",objectFit:"cover",position:"absolute",inset:0 }} />}
+        {profile?.cover_photo&&<img src={profile.cover_photo} alt="" style={{ width:"100%",height:"100%",objectFit:"cover",position:"absolute",inset:0 }} />}
         <button onClick={()=>navigate("/Home")} style={{ position:"absolute",top:12,left:12,background:"#00000066",border:"none",borderRadius:20,color:"#fff",padding:"6px 12px",cursor:"pointer",fontSize:13 }}>← Back</button>
-        {!editing && <button onClick={()=>setEditing(true)} style={{ position:"absolute",top:12,right:12,background:"#00000066",border:"none",borderRadius:20,color:"#fff",padding:"6px 14px",cursor:"pointer",fontSize:13,fontWeight:600 }}>✏️ Edit</button>}
+        {!editing&&<button onClick={()=>setEditing(true)} style={{ position:"absolute",top:12,right:12,background:"#00000066",border:"none",borderRadius:20,color:"#fff",padding:"6px 14px",cursor:"pointer",fontSize:13,fontWeight:600 }}>✏️ Edit</button>}
       </div>
 
-      {/* Avatar + info */}
       <div style={{ maxWidth:600,margin:"0 auto",padding:"0 16px" }}>
         <div style={{ display:"flex",alignItems:"flex-end",gap:16,marginTop:-36,marginBottom:16 }}>
           <div style={{ width:80,height:80,borderRadius:"50%",background:"linear-gradient(135deg,#c084fc,#22d3ee)",border:"3px solid #0d0d1a",display:"flex",alignItems:"center",justifyContent:"center",fontSize:32,fontWeight:700,flexShrink:0,overflow:"hidden" }}>
-            {profile?.avatar_url ? <img src={profile.avatar_url} alt="" style={{ width:"100%",height:"100%",objectFit:"cover" }} /> : (profile?.display_name?.[0] || "👤")}
+            {profile?.avatar_url?<img src={profile.avatar_url} alt="" style={{ width:"100%",height:"100%",objectFit:"cover" }} />:(profile?.display_name?.[0]||user?.full_name?.[0]||"👤")}
           </div>
           <div style={{ flex:1,paddingBottom:4 }}>
-            <div style={{ fontWeight:900,fontSize:20 }}>{profile?.display_name || "Your Name"}</div>
-            <div style={{ color:"#94a3b8",fontSize:13 }}>{profile?.headline || "Add a headline"}</div>
+            <div style={{ fontWeight:900,fontSize:20 }}>{profile?.display_name||user?.full_name||"Your Name"}</div>
+            <div style={{ color:"#94a3b8",fontSize:13 }}>{profile?.headline||user?.email}</div>
           </div>
         </div>
 
-        {profile?.mood && <div style={{ background:"#16162a",border:"1px solid #2a2a45",borderRadius:20,padding:"6px 14px",display:"inline-block",fontSize:13,color:"#c084fc",marginBottom:12 }}>😶 {profile.mood}</div>}
-        {profile?.song_playing && <div style={{ background:"#16162a",border:"1px solid #2a2a45",borderRadius:20,padding:"6px 14px",display:"inline-block",fontSize:13,color:"#22d3ee",marginBottom:12,marginLeft:8 }}>🎵 {profile.song_playing}</div>}
-        {profile?.about_me && <div style={{ color:"#94a3b8",fontSize:14,lineHeight:1.6,marginBottom:12 }}>{profile.about_me}</div>}
+        {profile?.mood&&<div style={{ background:"#16162a",border:"1px solid #2a2a45",borderRadius:20,padding:"6px 14px",display:"inline-block",fontSize:13,color:"#c084fc",marginBottom:12 }}>😶 {profile.mood}</div>}
+        {profile?.song_playing&&<div style={{ background:"#16162a",border:"1px solid #2a2a45",borderRadius:20,padding:"6px 14px",display:"inline-block",fontSize:13,color:"#22d3ee",marginBottom:12,marginLeft:8 }}>🎵 {profile.song_playing}</div>}
+        {profile?.about_me&&<div style={{ color:"#94a3b8",fontSize:14,lineHeight:1.6,marginBottom:12 }}>{profile.about_me}</div>}
 
-        {Array.isArray(profile?.interests) && profile.interests.length>0 && (
-          <div style={{ display:"flex",flexWrap:"wrap",gap:6,marginBottom:16 }}>
-            {profile.interests.map((i,idx)=><span key={idx} style={{ background:"#1e1a2e",border:"1px solid #c084fc30",color:"#c084fc",fontSize:12,padding:"3px 10px",borderRadius:20 }}>{i}</span>)}
+        {!profile&&!editing&&(
+          <div style={{ background:"#16162a",border:"1px dashed #2a2a45",borderRadius:16,padding:20,marginBottom:16,textAlign:"center" }}>
+            <div style={{ color:"#64748b",fontSize:14,marginBottom:12 }}>Complete your profile to connect with others 🌐</div>
+            <button onClick={()=>setEditing(true)} style={{ padding:"10px 24px",background:"linear-gradient(135deg,#c084fc,#22d3ee)",border:"none",borderRadius:12,color:"#000",fontWeight:700,cursor:"pointer" }}>Set Up Profile</button>
           </div>
         )}
 
@@ -117,32 +128,22 @@ export default function MyProfile() {
           <span><strong style={{ color:"#f0f0f0" }}>{profile?.profile_views||0}</strong> views</span>
         </div>
 
-        {/* Edit form */}
-        {editing && (
+        {editing&&(
           <div style={{ background:"#16162a",border:"1px solid #2a2a45",borderRadius:16,padding:20,marginBottom:20 }}>
             <div style={{ fontWeight:700,fontSize:16,marginBottom:16 }}>Edit Profile</div>
-            {[
-              ["display_name","Display Name","text"],
-              ["headline","Headline","text"],
-              ["about_me","About Me","textarea"],
-              ["mood","Current Mood","text"],
-              ["song_playing","Song Playing","text"],
-              ["avatar_url","Avatar URL","text"],
-            ].map(([field,label,type])=>(
+            {[["display_name","Display Name","text"],["headline","Headline","text"],["about_me","About Me","textarea"],["mood","Current Mood","text"],["song_playing","Song Playing","text"],["avatar_url","Avatar URL","text"]].map(([field,label,type])=>(
               <div key={field} style={{ marginBottom:14 }}>
                 <label style={{ color:"#94a3b8",fontSize:13,display:"block",marginBottom:4 }}>{label}</label>
                 {type==="textarea"
-                  ? <textarea value={form[field]||""} onChange={e=>setForm(f=>({...f,[field]:e.target.value}))} style={{ width:"100%",background:"#0d0d1a",border:"1px solid #2a2a45",borderRadius:8,color:"#f0f0f0",fontSize:14,padding:"10px 12px",boxSizing:"border-box",minHeight:80,resize:"vertical",fontFamily:"inherit",outline:"none" }} />
-                  : <input type="text" value={form[field]||""} onChange={e=>setForm(f=>({...f,[field]:e.target.value}))} style={{ width:"100%",background:"#0d0d1a",border:"1px solid #2a2a45",borderRadius:8,color:"#f0f0f0",fontSize:14,padding:"10px 12px",boxSizing:"border-box",outline:"none" }} />
+                  ?<textarea value={form[field]||""} onChange={e=>setForm(f=>({...f,[field]:e.target.value}))} style={{ width:"100%",background:"#0d0d1a",border:"1px solid #2a2a45",borderRadius:8,color:"#f0f0f0",fontSize:14,padding:"10px 12px",boxSizing:"border-box",minHeight:80,resize:"vertical",fontFamily:"inherit",outline:"none" }} />
+                  :<input type="text" value={form[field]||""} onChange={e=>setForm(f=>({...f,[field]:e.target.value}))} style={{ width:"100%",background:"#0d0d1a",border:"1px solid #2a2a45",borderRadius:8,color:"#f0f0f0",fontSize:14,padding:"10px 12px",boxSizing:"border-box",outline:"none" }} />
                 }
               </div>
             ))}
             <div style={{ marginBottom:14 }}>
               <label style={{ color:"#94a3b8",fontSize:13,display:"block",marginBottom:4 }}>Theme</label>
               <div style={{ display:"flex",gap:8,flexWrap:"wrap" }}>
-                {Object.entries({
-                  "purple-pink":"💜 Purple","orange-red":"🔥 Orange","green-teal":"💚 Green","blue-cyan":"💙 Blue","teal-blue":"🌊 Teal"
-                }).map(([val,label])=>(
+                {Object.entries({"purple-pink":"💜 Purple","orange-red":"🔥 Orange","green-teal":"💚 Green","blue-cyan":"💙 Blue","teal-blue":"🌊 Teal"}).map(([val,label])=>(
                   <button key={val} onClick={()=>setForm(f=>({...f,background_gradient:val}))} style={{ padding:"6px 12px",background:form.background_gradient===val?"#2a1a3e":"#0d0d1a",border:`1px solid ${form.background_gradient===val?"#c084fc":"#2a2a45"}`,borderRadius:20,color:form.background_gradient===val?"#c084fc":"#94a3b8",fontSize:12,cursor:"pointer" }}>{label}</button>
                 ))}
               </div>
@@ -154,43 +155,39 @@ export default function MyProfile() {
           </div>
         )}
 
-        {/* Tabs */}
         <div style={{ display:"flex",gap:2,borderBottom:"1px solid #2a2a45",marginBottom:16 }}>
           {["posts","wall"].map(t=>(
-            <button key={t} onClick={()=>setTab(t)} style={{ padding:"10px 20px",background:"transparent",border:"none",borderBottom:`2px solid ${tab===t?"#c084fc":"transparent"}`,color:tab===t?"#c084fc":"#64748b",fontWeight:600,cursor:"pointer",fontSize:14,textTransform:"capitalize" }}>{t==="posts"?"📝 Posts":"📌 Wall"}</button>
+            <button key={t} onClick={()=>setTab(t)} style={{ padding:"10px 20px",background:"transparent",border:"none",borderBottom:`2px solid ${tab===t?"#c084fc":"transparent"}`,color:tab===t?"#c084fc":"#64748b",fontWeight:600,cursor:"pointer",fontSize:14 }}>{t==="posts"?"📝 Posts":"📌 Wall"}</button>
           ))}
         </div>
 
-        {tab==="posts" && (
+        {tab==="posts"&&(
           posts.length===0
-            ? <div style={{ textAlign:"center",padding:32,color:"#64748b" }}>No posts yet.</div>
-            : posts.map(p=>(
+            ?<div style={{ textAlign:"center",padding:32,color:"#64748b" }}>No posts yet. Share something!</div>
+            :posts.map(p=>(
               <div key={p.id} style={{ background:"#16162a",border:"1px solid #2a2a45",borderRadius:12,padding:16,marginBottom:12 }}>
-                {p.content && <div style={{ fontSize:14,color:"#cbd5e1",lineHeight:1.6 }}>{p.content}</div>}
-                {p.image_url && <img src={p.image_url} alt="" style={{ width:"100%",borderRadius:8,marginTop:8,maxHeight:300,objectFit:"cover" }} onError={e=>e.target.style.display="none"} />}
-                <div style={{ marginTop:8,color:"#64748b",fontSize:12 }}>💜 {p.likes_count||0} · 💬 {p.comments_count||0}</div>
+                {p.content&&<div style={{ fontSize:14,color:"#cbd5e1",lineHeight:1.6 }}>{p.content}</div>}
+                {p.image_url&&<img src={p.image_url} alt="" style={{ width:"100%",borderRadius:8,marginTop:8 }} onError={e=>e.target.style.display="none"} />}
+                <div style={{ color:"#64748b",fontSize:11,marginTop:8 }}>{p.created_date?new Date(p.created_date).toLocaleDateString():""} · 💜 {p.likes_count||0}</div>
               </div>
             ))
         )}
 
-        {tab==="wall" && (
-          <div>
-            {wall.length===0
-              ? <div style={{ textAlign:"center",padding:32,color:"#64748b" }}>No wall posts yet.</div>
-              : wall.map(w=>(
-                <div key={w.id} style={{ background:"#16162a",border:"1px solid #2a2a45",borderRadius:12,padding:14,marginBottom:10 }}>
-                  <div style={{ fontWeight:600,fontSize:13,marginBottom:4 }}>{w.author_name}</div>
-                  <div style={{ color:"#94a3b8",fontSize:14 }}>{w.content}</div>
-                </div>
-              ))
-            }
-          </div>
+        {tab==="wall"&&(
+          wall.length===0
+            ?<div style={{ textAlign:"center",padding:32,color:"#64748b" }}>No wall posts yet.</div>
+            :wall.map(w=>(
+              <div key={w.id} style={{ background:"#16162a",border:"1px solid #2a2a45",borderRadius:12,padding:16,marginBottom:12 }}>
+                <div style={{ fontWeight:700,fontSize:13,marginBottom:4,color:"#c084fc" }}>{w.author_name}</div>
+                <div style={{ fontSize:14,color:"#cbd5e1" }}>{w.content}</div>
+              </div>
+            ))
         )}
       </div>
 
-      <div style={{ position:"fixed",bottom:0,left:0,right:0,background:"#0d0d1a",borderTop:"1px solid #2a2a45",display:"flex",justifyContent:"space-around",padding:"10px 0",zIndex:100 }}>
+      <div style={{ position:"fixed",bottom:0,left:0,right:0,background:"#0d0d1a",borderTop:"1px solid #2a2a45",display:"flex",justifyContent:"space-around",padding:"10px 0" }}>
         {NAV.map(item=>(
-          <button key={item.path} onClick={()=>navigate(item.path)} style={{ background:"none",border:"none",color:window.location.pathname===item.path?"#c084fc":"#64748b",cursor:"pointer",fontSize:22 }}>{item.icon}</button>
+          <button key={item.path} onClick={()=>navigate(item.path)} style={{ background:"none",border:"none",fontSize:22,cursor:"pointer",opacity:item.path==="/MyProfile"?1:0.5 }}>{item.icon}</button>
         ))}
       </div>
     </div>

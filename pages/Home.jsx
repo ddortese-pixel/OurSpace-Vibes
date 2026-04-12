@@ -1,53 +1,43 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Post, Profile, Story, Notification } from "../api/entities";
+import { User } from "../api/entities";
 import { useNavigate } from "react-router-dom";
 
-function injectGA(measurementId) {
-  if (document.getElementById(`ga-${measurementId}`)) return;
-  const s1 = document.createElement("script");
-  s1.id = `ga-${measurementId}`;
-  s1.async = true;
-  s1.src = `https://www.googletagmanager.com/gtag/js?id=${measurementId}`;
-  document.head.appendChild(s1);
+function injectGA(id) {
+  if (document.getElementById(`ga-${id}`)) return;
+  const s1 = document.createElement("script"); s1.id=`ga-${id}`; s1.async=true;
+  s1.src=`https://www.googletagmanager.com/gtag/js?id=${id}`; document.head.appendChild(s1);
   const s2 = document.createElement("script");
-  s2.innerHTML = `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag("js",new Date());gtag("config","${measurementId}");`;
+  s2.innerHTML=`window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag("js",new Date());gtag("config","${id}");`;
   document.head.appendChild(s2);
 }
 
-const NAV_ITEMS = [
-  { icon: "🏠", label: "Feed", path: "/Home" },
-  { icon: "🔍", label: "Discover", path: "/Discover" },
-  { icon: "✉️", label: "Messages", path: "/Messages" },
-  { icon: "🔔", label: "Alerts", path: "/Notifications" },
-  { icon: "👤", label: "Profile", path: "/MyProfile" },
-];
+const PAGE_SIZE = 20;
 
 function PostCard({ post, currentUserEmail, onLike, onNavigate }) {
   const liked = Array.isArray(post.liked_by) && post.liked_by.includes(currentUserEmail);
   return (
-    <div style={{ background: "#16162a", borderRadius: 16, marginBottom: 16, border: "1px solid #2a2a45", overflow: "hidden" }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "14px 16px" }}>
-        <div onClick={() => onNavigate(`/Profile?email=${post.author_email}`)}
-          style={{ width: 40, height: 40, borderRadius: "50%", background: "linear-gradient(135deg,#c084fc,#22d3ee)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, color: "#fff", fontSize: 16, cursor: "pointer", flexShrink: 0, overflow: "hidden" }}>
-          {post.author_avatar ? <img src={post.author_avatar} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : (post.author_name?.[0] || "?")}
+    <div style={{ background:"#16162a",borderRadius:16,marginBottom:16,border:"1px solid #2a2a45",overflow:"hidden" }}>
+      <div style={{ display:"flex",alignItems:"center",gap:12,padding:"14px 16px" }}>
+        <div onClick={()=>onNavigate(`/Profile?email=${post.author_email}`)}
+          style={{ width:40,height:40,borderRadius:"50%",background:"linear-gradient(135deg,#c084fc,#22d3ee)",display:"flex",alignItems:"center",justifyContent:"center",fontWeight:700,color:"#fff",fontSize:16,cursor:"pointer",flexShrink:0,overflow:"hidden" }}>
+          {post.author_avatar?<img src={post.author_avatar} alt="" style={{ width:"100%",height:"100%",objectFit:"cover" }} />:(post.author_name?.[0]||"?")}
         </div>
-        <div style={{ flex: 1 }}>
-          <div style={{ fontWeight: 700, fontSize: 14, cursor: "pointer" }} onClick={() => onNavigate(`/Profile?email=${post.author_email}`)}>{post.author_name || "Unknown"}</div>
-          <div style={{ color: "#64748b", fontSize: 11 }}>{post.created_date ? new Date(post.created_date).toLocaleDateString("en-US",{month:"short",day:"numeric",hour:"2-digit",minute:"2-digit"}) : ""}</div>
+        <div style={{ flex:1 }}>
+          <div style={{ fontWeight:700,fontSize:14,cursor:"pointer" }} onClick={()=>onNavigate(`/Profile?email=${post.author_email}`)}>{post.author_name||"Unknown"}</div>
+          <div style={{ color:"#64748b",fontSize:11 }}>{post.created_date?new Date(post.created_date).toLocaleDateString("en-US",{month:"short",day:"numeric",hour:"2-digit",minute:"2-digit"}):""}</div>
         </div>
-        {post.is_ai_generated && <span style={{ background:"#1e1a2e",border:"1px solid #c084fc50",color:"#c084fc",fontSize:10,padding:"2px 8px",borderRadius:20 }}>🤖 AI</span>}
-        {!post.is_ai_generated && <span style={{ background:"#1e2a1e",border:"1px solid #4ade8050",color:"#4ade80",fontSize:10,padding:"2px 8px",borderRadius:20 }}>✅ Human</span>}
+        {post.is_ai_generated&&<span style={{ background:"#1e1a2e",border:"1px solid #c084fc50",color:"#c084fc",fontSize:10,padding:"2px 8px",borderRadius:20 }}>🤖 AI</span>}
+        {!post.is_ai_generated&&<span style={{ background:"#1e2a1e",border:"1px solid #4ade8050",color:"#4ade80",fontSize:10,padding:"2px 8px",borderRadius:20 }}>✅ Human</span>}
       </div>
-      {post.title && <div style={{ fontWeight:700,fontSize:16,padding:"0 16px 6px" }}>{post.title}</div>}
-      {post.content && <div style={{ color:"#cbd5e1",fontSize:14,lineHeight:1.6,padding:"0 16px 12px",whiteSpace:"pre-wrap" }}>{post.content}</div>}
-      {post.image_url && <img src={post.image_url} alt="post" style={{ width:"100%",maxHeight:400,objectFit:"cover" }} onError={e=>e.target.style.display="none"} />}
+      {post.title&&<div style={{ fontWeight:700,fontSize:16,padding:"0 16px 6px" }}>{post.title}</div>}
+      {post.content&&<div style={{ color:"#cbd5e1",fontSize:14,lineHeight:1.6,padding:"0 16px 12px",whiteSpace:"pre-wrap" }}>{post.content}</div>}
+      {post.image_url&&<img src={post.image_url} alt="post" style={{ width:"100%",maxHeight:400,objectFit:"cover" }} onError={e=>e.target.style.display="none"} />}
       <div style={{ display:"flex",gap:4,padding:"10px 12px",borderTop:"1px solid #2a2a45" }}>
         <button onClick={()=>onLike(post)} style={{ display:"flex",alignItems:"center",gap:6,padding:"6px 12px",background:liked?"#2a1a3e":"transparent",border:`1px solid ${liked?"#c084fc":"#2a2a45"}`,borderRadius:20,color:liked?"#c084fc":"#94a3b8",fontSize:13,cursor:"pointer" }}>
           {liked?"💜":"🤍"} {post.likes_count||0}
         </button>
-        <button style={{ display:"flex",alignItems:"center",gap:6,padding:"6px 12px",background:"transparent",border:"1px solid #2a2a45",borderRadius:20,color:"#94a3b8",fontSize:13,cursor:"pointer" }}>
-          💬 {post.comments_count||0}
-        </button>
+        <button style={{ display:"flex",alignItems:"center",gap:6,padding:"6px 12px",background:"transparent",border:"1px solid #2a2a45",borderRadius:20,color:"#94a3b8",fontSize:13,cursor:"pointer" }}>💬 {post.comments_count||0}</button>
         <button style={{ marginLeft:"auto",padding:"6px 12px",background:"transparent",border:"1px solid #2a2a45",borderRadius:20,color:"#94a3b8",fontSize:13,cursor:"pointer" }}>↗ Share</button>
       </div>
     </div>
@@ -55,52 +45,100 @@ function PostCard({ post, currentUserEmail, onLike, onNavigate }) {
 }
 
 export default function Home() {
+  const [user, setUser] = useState(null);
   const [posts, setPosts] = useState([]);
   const [stories, setStories] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const [page, setPage] = useState(0);
   const [humanOnly, setHumanOnly] = useState(false);
   const [newPost, setNewPost] = useState("");
   const [posting, setPosting] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const navigate = useNavigate();
+  const bottomRef = useRef(null);
 
-  useEffect(() => { injectGA("G-1N8GD2WM6L"); loadAll(); }, []);
+  useEffect(() => {
+    injectGA("G-1N8GD2WM6L");
+    loadInitial();
+  }, []);
 
-  const loadAll = async () => {
+  // Infinite scroll observer
+  useEffect(() => {
+    if (!bottomRef.current) return;
+    const obs = new IntersectionObserver(entries => {
+      if (entries[0].isIntersecting && hasMore && !loadingMore) loadMorePosts();
+    }, { threshold: 0.1 });
+    obs.observe(bottomRef.current);
+    return () => obs.disconnect();
+  }, [hasMore, loadingMore, posts]);
+
+  const loadInitial = async () => {
     setLoading(true);
     try {
-      const [postsData, storiesData, notifData] = await Promise.all([
-        Post.list("-created_date"),
+      const [currentUser, postsData, storiesData, notifData] = await Promise.all([
+        User.me().catch(() => null),
+        Post.list("-created_date", PAGE_SIZE, 0),
         Story.list("-created_date"),
         Notification.list(),
       ]);
+      setUser(currentUser);
       setPosts(postsData);
-      setStories(storiesData.slice(0,8));
-      setUnreadCount(notifData.filter(n=>!n.is_read).length);
+      setHasMore(postsData.length === PAGE_SIZE);
+      setPage(1);
+      setStories(storiesData.slice(0, 8));
+      setUnreadCount(notifData.filter(n => !n.is_read).length);
     } catch(e) { console.error(e); }
     setLoading(false);
   };
 
+  const loadMorePosts = async () => {
+    if (loadingMore || !hasMore) return;
+    setLoadingMore(true);
+    try {
+      const more = await Post.list("-created_date", PAGE_SIZE, page * PAGE_SIZE);
+      setPosts(prev => [...prev, ...more]);
+      setHasMore(more.length === PAGE_SIZE);
+      setPage(p => p + 1);
+    } catch(e) { console.error(e); }
+    setLoadingMore(false);
+  };
+
+  const currentEmail = user?.email || "guest@ourspace.app";
+  const currentName = user?.full_name || "Guest";
+
   const handleLike = async (post) => {
-    const email = "me@ourspace.app";
-    const alreadyLiked = Array.isArray(post.liked_by) && post.liked_by.includes(email);
-    const newLiked = alreadyLiked ? post.liked_by.filter(e=>e!==email) : [...(post.liked_by||[]),email];
-    await Post.update(post.id,{liked_by:newLiked,likes_count:newLiked.length});
-    setPosts(prev=>prev.map(p=>p.id===post.id?{...p,liked_by:newLiked,likes_count:newLiked.length}:p));
+    const alreadyLiked = Array.isArray(post.liked_by) && post.liked_by.includes(currentEmail);
+    const newLiked = alreadyLiked ? post.liked_by.filter(e => e !== currentEmail) : [...(post.liked_by||[]), currentEmail];
+    await Post.update(post.id, { liked_by: newLiked, likes_count: newLiked.length });
+    setPosts(prev => prev.map(p => p.id === post.id ? {...p, liked_by: newLiked, likes_count: newLiked.length} : p));
   };
 
   const handlePost = async () => {
-    if(!newPost.trim()) return;
+    if (!newPost.trim()) return;
+    if (!user) { navigate("/Onboarding"); return; }
     setPosting(true);
     try {
-      const created = await Post.create({ content:newPost.trim(), author_name:"You", author_email:"me@ourspace.app", post_type:"text", likes_count:0, comments_count:0, liked_by:[], is_unfiltered:true, is_ai_generated:false, searchable_text:newPost.trim().toLowerCase() });
-      setPosts(prev=>[created,...prev]);
+      const created = await Post.create({
+        content: newPost.trim(),
+        author_name: currentName,
+        author_email: currentEmail,
+        post_type: "text",
+        likes_count: 0,
+        comments_count: 0,
+        liked_by: [],
+        is_unfiltered: true,
+        is_ai_generated: false,
+        searchable_text: newPost.trim().toLowerCase()
+      });
+      setPosts(prev => [created, ...prev]);
       setNewPost("");
-    } catch(e){console.error(e);}
+    } catch(e) { console.error(e); }
     setPosting(false);
   };
 
-  const filtered = humanOnly ? posts.filter(p=>p.is_unfiltered&&!p.is_ai_generated) : posts;
+  const filtered = humanOnly ? posts.filter(p => p.is_unfiltered && !p.is_ai_generated) : posts;
 
   return (
     <div style={{ minHeight:"100vh",background:"#0d0d1a",color:"#f0f0f0",fontFamily:"'Segoe UI',sans-serif",paddingBottom:80 }}>
@@ -113,6 +151,7 @@ export default function Home() {
           <button onClick={()=>navigate("/Notifications")} style={{ background:"none",border:"none",cursor:"pointer",fontSize:20,position:"relative",color:"white" }}>
             🔔{unreadCount>0&&<span style={{ position:"absolute",top:-4,right:-4,background:"#c084fc",color:"#fff",borderRadius:"50%",width:16,height:16,fontSize:10,display:"flex",alignItems:"center",justifyContent:"center",fontWeight:700 }}>{unreadCount}</span>}
           </button>
+          {!user && <button onClick={()=>navigate("/Onboarding")} style={{ padding:"6px 14px",background:"linear-gradient(135deg,#c084fc,#22d3ee)",border:"none",borderRadius:20,color:"#000",fontWeight:700,fontSize:12,cursor:"pointer" }}>Join</button>}
         </div>
       </div>
 
@@ -133,7 +172,10 @@ export default function Home() {
         )}
 
         <div style={{ background:"#16162a",border:"1px solid #2a2a45",borderRadius:16,padding:16,marginBottom:20 }}>
-          <textarea value={newPost} onChange={e=>setNewPost(e.target.value)} placeholder="What's on your mind? No algorithm here — your post reaches everyone. 🌐"
+          {!user && <div style={{ color:"#64748b",fontSize:13,marginBottom:8,textAlign:"center" }}>👋 <span style={{ color:"#c084fc",cursor:"pointer",fontWeight:600 }} onClick={()=>navigate("/Onboarding")}>Join OurSpace</span> to post</div>}
+          <textarea value={newPost} onChange={e=>setNewPost(e.target.value)}
+            onClick={()=>{ if(!user) navigate("/Onboarding"); }}
+            placeholder={user ? "What's on your mind? No algorithm here — your post reaches everyone. 🌐" : "Sign up to start posting..."}
             style={{ width:"100%",background:"transparent",border:"none",color:"#f0f0f0",fontSize:14,resize:"none",outline:"none",minHeight:72,boxSizing:"border-box",fontFamily:"inherit" }} />
           <div style={{ display:"flex",justifyContent:"space-between",alignItems:"center",marginTop:8 }}>
             <div style={{ display:"flex",gap:8 }}>
@@ -151,15 +193,18 @@ export default function Home() {
         ) : filtered.length===0 ? (
           <div style={{ textAlign:"center",padding:40,color:"#64748b" }}><div style={{ fontSize:40,marginBottom:12 }}>🌐</div><div>No posts yet. Be the first.</div></div>
         ) : (
-          filtered.map(post=><PostCard key={post.id} post={post} currentUserEmail="me@ourspace.app" onLike={handleLike} onNavigate={navigate} />)
+          filtered.map(post=><PostCard key={post.id} post={post} currentUserEmail={currentEmail} onLike={handleLike} onNavigate={navigate} />)
         )}
+
+        <div ref={bottomRef} style={{ height:40,display:"flex",alignItems:"center",justifyContent:"center" }}>
+          {loadingMore && <span style={{ color:"#64748b",fontSize:13 }}>Loading more...</span>}
+          {!hasMore && posts.length>0 && <span style={{ color:"#2a2a45",fontSize:12 }}>— You're all caught up —</span>}
+        </div>
       </div>
 
-      <div style={{ position:"fixed",bottom:0,left:0,right:0,background:"#0d0d1a",borderTop:"1px solid #2a2a45",display:"flex",justifyContent:"space-around",padding:"10px 0",zIndex:100 }}>
-        {NAV_ITEMS.map(item=>(
-          <button key={item.path} onClick={()=>navigate(item.path)} style={{ background:"none",border:"none",color:window.location.pathname===item.path?"#c084fc":"#64748b",display:"flex",flexDirection:"column",alignItems:"center",gap:2,cursor:"pointer",fontSize:20 }}>
-            {item.icon}<span style={{ fontSize:10 }}>{item.label}</span>
-          </button>
+      <div style={{ position:"fixed",bottom:0,left:0,right:0,background:"#0d0d1a",borderTop:"1px solid #2a2a45",display:"flex",justifyContent:"space-around",padding:"10px 0" }}>
+        {[{icon:"🏠",path:"/Home"},{icon:"🔍",path:"/Discover"},{icon:"✉️",path:"/Messages"},{icon:"🔔",path:"/Notifications"},{icon:"👤",path:"/MyProfile"}].map(item=>(
+          <button key={item.path} onClick={()=>navigate(item.path)} style={{ background:"none",border:"none",fontSize:22,cursor:"pointer",opacity:item.path==="/Home"?1:0.5 }}>{item.icon}</button>
         ))}
       </div>
     </div>

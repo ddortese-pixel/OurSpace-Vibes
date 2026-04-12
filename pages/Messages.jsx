@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Message, Profile } from "../api/entities";
+import { Message, Profile, User } from "../api/entities";
 import { useNavigate } from "react-router-dom";
 
 function injectGA(measurementId) {
@@ -22,7 +22,7 @@ const NAV = [
   { icon: "👤", path: "/MyProfile" },
 ];
 
-const MY_EMAIL = "me@ourspace.app";
+// myEmail set dynamically via User.me()
 
 function getConvoId(a, b) {
   return [a, b].sort().join("__");
@@ -35,6 +35,7 @@ export default function Messages() {
   const [draft, setDraft] = useState("");
   const [sending, setSending] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [myEmail, setMyEmail] = useState("guest@ourspace.app");
   const bottomRef = useRef(null);
   const navigate = useNavigate();
 
@@ -45,7 +46,8 @@ export default function Messages() {
   const loadAll = async () => {
     setLoading(true);
     try {
-      const [msgs, profs] = await Promise.all([Message.list("-created_date"), Profile.list()]);
+      const [msgs, profs, currentUser] = await Promise.all([Message.list("-created_date"), Profile.list(), User.me().catch(()=>null)]);
+      if (currentUser) setMyEmail(currentUser.email);
       setMessages(msgs);
       setProfiles(profs);
     } catch(e){ console.error(e); }
@@ -55,13 +57,13 @@ export default function Messages() {
   // Build conversation list
   const convos = {};
   messages.forEach(m => {
-    const other = m.sender_email === MY_EMAIL ? m.receiver_email : m.sender_email;
+    const other = m.sender_email === myEmail ? m.receiver_email : m.sender_email;
     if (!convos[other]) convos[other] = { email: other, latest: m, unread: 0 };
-    if (!m.is_read && m.receiver_email === MY_EMAIL) convos[other].unread++;
+    if (!m.is_read && m.receiver_email === myEmail) convos[other].unread++;
   });
   // Also include profiles with no messages yet
   profiles.forEach(p => {
-    if (p.user_email !== MY_EMAIL && !convos[p.user_email]) {
+    if (p.user_email !== myEmail && !convos[p.user_email]) {
       convos[p.user_email] = { email: p.user_email, latest: null, unread: 0 };
     }
   });
@@ -76,7 +78,7 @@ export default function Messages() {
   const convoMessages = activeConvo
     ? messages.filter(m => {
         const cid = getConvoId(m.sender_email, m.receiver_email);
-        return cid === getConvoId(MY_EMAIL, activeConvo);
+        return cid === getConvoId(myEmail, activeConvo);
       }).sort((a,b) => new Date(a.created_date) - new Date(b.created_date))
     : [];
 
@@ -85,12 +87,12 @@ export default function Messages() {
     setSending(true);
     try {
       const msg = await Message.create({
-        sender_email: MY_EMAIL,
+        sender_email: myEmail,
         receiver_email: activeConvo,
         sender_name: "You",
         content: draft.trim(),
         is_read: false,
-        conversation_id: getConvoId(MY_EMAIL, activeConvo),
+        conversation_id: getConvoId(myEmail, activeConvo),
       });
       setMessages(prev => [...prev, msg]);
       setDraft("");
@@ -147,10 +149,10 @@ export default function Messages() {
           <div style={{ flex:1,overflowY:"auto",padding:"16px",display:"flex",flexDirection:"column",gap:8 }}>
             {convoMessages.length===0&&<div style={{ textAlign:"center",padding:32,color:"#64748b" }}>Start a conversation with {activeProfile?.display_name||activeConvo}.</div>}
             {convoMessages.map(m=>(
-              <div key={m.id} style={{ display:"flex",justifyContent:m.sender_email===MY_EMAIL?"flex-end":"flex-start" }}>
-                <div style={{ maxWidth:"75%",background:m.sender_email===MY_EMAIL?"linear-gradient(135deg,#c084fc,#818cf8)":"#16162a",color:"#fff",borderRadius:m.sender_email===MY_EMAIL?"18px 18px 4px 18px":"18px 18px 18px 4px",padding:"10px 14px",fontSize:14,lineHeight:1.5 }}>
+              <div key={m.id} style={{ display:"flex",justifyContent:m.sender_email===myEmail?"flex-end":"flex-start" }}>
+                <div style={{ maxWidth:"75%",background:m.sender_email===myEmail?"linear-gradient(135deg,#c084fc,#818cf8)":"#16162a",color:"#fff",borderRadius:m.sender_email===myEmail?"18px 18px 4px 18px":"18px 18px 18px 4px",padding:"10px 14px",fontSize:14,lineHeight:1.5 }}>
                   {m.content}
-                  <div style={{ fontSize:10,color:m.sender_email===MY_EMAIL?"#ffffff80":"#64748b",marginTop:4,textAlign:"right" }}>
+                  <div style={{ fontSize:10,color:m.sender_email===myEmail?"#ffffff80":"#64748b",marginTop:4,textAlign:"right" }}>
                     {m.created_date?new Date(m.created_date).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"}):""}
                   </div>
                 </div>
