@@ -1,0 +1,28 @@
+{
+  "type": "object",
+  "properties": {
+    "from_email": {
+      "type": "string"
+    },
+    "from_name": {
+      "type": "string"
+    },
+    "to_email": {
+      "type": "string"
+    },
+    "to_name": {
+      "type": "string"
+    },
+    "message": {
+      "type": "string"
+    },
+    "emoji": {
+      "type": "string"
+    },
+    "is_read": {
+      "type": "boolean"
+    }
+  },
+  "required": [],
+  "name": "GlowMessage"
+}

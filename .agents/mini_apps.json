@@ -2,50 +2,14 @@
   "app_id": "69d9c17c15f11af079841768",
   "slug": "legacy-circle",
   "pages": {
-    "MyProfile": {
-      "title": "MyProfile"
-    },
-    "DiagnosticDashboard": {
-      "title": "DiagnosticDashboard"
-    },
-    "SplashScreen": {
-      "title": "SplashScreen"
-    },
-    "PostGenerator": {
-      "title": "PostGenerator"
-    },
-    "LaunchTracker": {
-      "title": "LaunchTracker"
-    },
-    "Notifications": {
-      "title": "Notifications"
-    },
-    "TermsOfService": {
-      "title": "TermsOfService"
-    },
-    "PrivacyPolicy": {
-      "title": "PrivacyPolicy"
-    },
-    "Profile": {
-      "title": "Profile"
-    },
-    "SeedOurSpace": {
-      "title": "SeedOurSpace"
-    },
-    "OurSpaceOnboarding": {
-      "title": "OurSpaceOnboarding"
-    },
-    "ReportContent": {
-      "title": "ReportContent"
-    },
     "AppStoreReadiness": {
       "title": "AppStoreReadiness"
     },
-    "Settings": {
-      "title": "Settings"
-    },
     "ContentPolicy": {
       "title": "ContentPolicy"
+    },
+    "DiagnosticDashboard": {
+      "title": "DiagnosticDashboard"
     },
     "Discover": {
       "title": "Discover"
@@ -53,14 +17,80 @@
     "Home": {
       "title": "Home"
     },
-    "OurSpacePrivacyPolicy": {
-      "title": "OurSpacePrivacyPolicy"
+    "LaunchTracker": {
+      "title": "LaunchTracker"
+    },
+    "Messages": {
+      "title": "Messages"
+    },
+    "MyProfile": {
+      "title": "MyProfile"
+    },
+    "Notifications": {
+      "title": "Notifications"
     },
     "Onboarding": {
       "title": "Onboarding"
     },
-    "Messages": {
-      "title": "Messages"
+    "OurSpaceOnboarding": {
+      "title": "OurSpaceOnboarding"
+    },
+    "OurSpacePrivacyPolicy": {
+      "title": "OurSpacePrivacyPolicy"
+    },
+    "PostGenerator": {
+      "title": "PostGenerator"
+    },
+    "PrivacyPolicy": {
+      "title": "PrivacyPolicy"
+    },
+    "Profile": {
+      "title": "Profile"
+    },
+    "ReportContent": {
+      "title": "ReportContent"
+    },
+    "SeedOurSpace": {
+      "title": "SeedOurSpace"
+    },
+    "Settings": {
+      "title": "Settings"
+    },
+    "SplashScreen": {
+      "title": "SplashScreen"
+    },
+    "TermsOfService": {
+      "title": "TermsOfService"
+    },
+    "LCSplashScreen": {
+      "title": "LCSplashScreen"
+    },
+    "LCOnboarding": {
+      "title": "LCOnboarding"
+    },
+    "LCHome": {
+      "title": "LCHome"
+    },
+    "LCStories": {
+      "title": "LCStories"
+    },
+    "LCProgress": {
+      "title": "LCProgress"
+    },
+    "LCGlows": {
+      "title": "LCGlows"
+    },
+    "LCProfile": {
+      "title": "LCProfile"
+    },
+    "LCPrivacyPolicy": {
+      "title": "LCPrivacyPolicy"
+    },
+    "LCTermsOfService": {
+      "title": "LCTermsOfService"
+    },
+    "LCReportContent": {
+      "title": "LCReportContent"
     }
   }
 }

@@ -1,0 +1,48 @@
+{
+  "type": "object",
+  "properties": {
+    "learner_email": {
+      "type": "string"
+    },
+    "story_id": {
+      "type": "string"
+    },
+    "story_title": {
+      "type": "string"
+    },
+    "character": {
+      "type": "string",
+      "enum": [
+        "Justice",
+        "Lebron",
+        "Zara",
+        "Eli"
+      ]
+    },
+    "episode": {
+      "type": "number"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "not_started",
+        "in_progress",
+        "completed"
+      ]
+    },
+    "xp_earned": {
+      "type": "number"
+    },
+    "completed_at": {
+      "type": "string"
+    },
+    "choices_made": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "required": [],
+  "name": "StoryProgress"
+}

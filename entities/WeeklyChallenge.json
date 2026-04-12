@@ -1,0 +1,41 @@
+{
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "character": {
+      "type": "string",
+      "enum": [
+        "Justice",
+        "Lebron",
+        "Zara",
+        "Eli",
+        "All"
+      ]
+    },
+    "xp_reward": {
+      "type": "number"
+    },
+    "badge_reward": {
+      "type": "string"
+    },
+    "week_start": {
+      "type": "string"
+    },
+    "week_end": {
+      "type": "string"
+    },
+    "is_active": {
+      "type": "boolean"
+    },
+    "completions": {
+      "type": "number"
+    }
+  },
+  "required": [],
+  "name": "WeeklyChallenge"
+}

@@ -1,0 +1,72 @@
+{
+  "type": "object",
+  "properties": {
+    "user_email": {
+      "type": "string"
+    },
+    "display_name": {
+      "type": "string"
+    },
+    "avatar_emoji": {
+      "type": "string"
+    },
+    "age_group": {
+      "type": "string",
+      "enum": [
+        "2-4",
+        "5-7",
+        "8-10",
+        "11-14"
+      ]
+    },
+    "xp": {
+      "type": "number"
+    },
+    "level": {
+      "type": "number"
+    },
+    "badges": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "streak_days": {
+      "type": "number"
+    },
+    "favorite_character": {
+      "type": "string",
+      "enum": [
+        "Justice",
+        "Lebron",
+        "Zara",
+        "Eli"
+      ]
+    },
+    "parent_email": {
+      "type": "string"
+    },
+    "parent_verified": {
+      "type": "boolean"
+    },
+    "consent_token": {
+      "type": "string"
+    },
+    "consent_status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "approved",
+        "denied"
+      ]
+    },
+    "total_stories_completed": {
+      "type": "number"
+    },
+    "total_quizzes_passed": {
+      "type": "number"
+    }
+  },
+  "required": [],
+  "name": "LearnerProfile"
+}

@@ -1,0 +1,37 @@
+{
+  "type": "object",
+  "properties": {
+    "learner_email": {
+      "type": "string"
+    },
+    "story_id": {
+      "type": "string"
+    },
+    "quiz_title": {
+      "type": "string"
+    },
+    "score": {
+      "type": "number"
+    },
+    "max_score": {
+      "type": "number"
+    },
+    "passed": {
+      "type": "boolean"
+    },
+    "xp_earned": {
+      "type": "number"
+    },
+    "answers": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "completed_at": {
+      "type": "string"
+    }
+  },
+  "required": [],
+  "name": "MasteryQuiz"
+}
