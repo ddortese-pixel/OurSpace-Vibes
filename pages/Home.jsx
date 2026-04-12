@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from "react";
-import { Post, Profile, Story, Notification } from "../api/entities";
+import { Post, Story, Notification } from "../api/entities";
 import { useNavigate } from "react-router-dom";
+
+const FEED_URL = "https://legacy-circle-ae3f9932.base44.app/functions/getPublicFeed";
 
 function injectGA(id) {
   if (document.getElementById(`ga-${id}`)) return;
@@ -17,6 +19,16 @@ function getMyName() { return localStorage.getItem("os2_name") || "Guest"; }
 function isLoggedIn() { return !!localStorage.getItem("os2_email"); }
 
 const PAGE_SIZE = 20;
+
+async function fetchPublicPosts(limit, skip) {
+  const res = await fetch(FEED_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ limit, skip })
+  });
+  const data = await res.json();
+  return data.posts || [];
+}
 
 function PostCard({ post, currentUserEmail, onLike, onNavigate }) {
   const liked = Array.isArray(post.liked_by) && post.liked_by.includes(currentUserEmail);
@@ -80,16 +92,19 @@ export default function Home() {
   const loadInitial = async () => {
     setLoading(true);
     try {
-      const [postsData, storiesData, notifData] = await Promise.all([
-        Post.list("-created_date", PAGE_SIZE, 0),
-        Story.list("-created_date"),
-        Notification.list(),
+      const [postsData, storiesData] = await Promise.all([
+        fetchPublicPosts(PAGE_SIZE, 0),
+        Story.list("-created_date").catch(() => []),
       ]);
       setPosts(postsData || []);
       setHasMore((postsData||[]).length === PAGE_SIZE);
       setPage(1);
       setStories((storiesData||[]).slice(0, 8));
-      setUnreadCount((notifData||[]).filter(n => !n.is_read).length);
+      // Only load notifications if logged in
+      if (isLoggedIn()) {
+        const notifData = await Notification.list().catch(() => []);
+        setUnreadCount((notifData||[]).filter(n => !n.is_read).length);
+      }
     } catch(e) { console.error(e); }
     setLoading(false);
   };
@@ -98,7 +113,7 @@ export default function Home() {
     if (loadingMore || !hasMore) return;
     setLoadingMore(true);
     try {
-      const more = await Post.list("-created_date", PAGE_SIZE, page * PAGE_SIZE);
+      const more = await fetchPublicPosts(PAGE_SIZE, page * PAGE_SIZE);
       setPosts(prev => [...prev, ...(more||[])]);
       setHasMore((more||[]).length === PAGE_SIZE);
       setPage(p => p + 1);
@@ -210,5 +225,3 @@ export default function Home() {
     </div>
   );
 }
-
-// Sun Apr 12 03:12:50 UTC 2026
