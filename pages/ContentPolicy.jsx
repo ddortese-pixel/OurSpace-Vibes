@@ -1,145 +1,176 @@
+import { useNavigate } from "react-router-dom";
+
 export default function ContentPolicy() {
+  const navigate = useNavigate();
+  const EFFECTIVE = "April 2026";
   const SAFETY_EMAIL = "ddortese@gmail.com";
   const APPEALS_EMAIL = "ddortese@gmail.com";
 
-  const rules = [
+  const tiers = [
     {
-      emoji: "🚫", title: "Zero Tolerance — Immediate Removal & Ban",
+      level: "ZERO TOLERANCE — Immediate Permanent Ban + Law Enforcement Report",
       color: "#ef4444",
+      border: "#ef444440",
       items: [
-        "Child sexual abuse material (CSAM) or any content sexualizing minors — reported to NCMEC CyberTipline",
-        "Content promoting or facilitating terrorism, mass violence, or genocide",
-        "Non-consensual intimate imagery (NCII / revenge porn)",
-        "Doxxing — sharing someone's private personal information to cause harm",
-        "Human trafficking or exploitation",
-        "Sale or distribution of illegal weapons, drugs, or controlled substances"
+        "Child Sexual Abuse Material (CSAM) — reported to NCMEC CyberTipline immediately",
+        "Content that facilitates or promotes terrorism or mass violence",
+        "Doxxing combined with direct threats of violence against a specific person",
+        "Non-consensual intimate imagery (revenge porn)",
       ]
     },
     {
-      emoji: "⚠️", title: "Prohibited Content — Removal & Possible Suspension",
+      level: "SEVERE — Immediate Suspension, Review, Possible Permanent Ban",
       color: "#f97316",
+      border: "#f9731640",
       items: [
-        "Harassment, bullying, or targeted abuse of any individual or group",
-        "Hate speech targeting race, ethnicity, religion, gender, sexual orientation, disability, or national origin",
-        "Graphic violence, gore, or content designed to shock or disturb",
-        "Spam, scams, phishing, or coordinated inauthentic behavior",
-        "Impersonating real people, brands, or organizations",
-        "Misinformation that could cause real-world harm",
-        "Copyright or trademark infringement",
-        "Content that violates any applicable laws or regulations"
+        "Coordinated harassment campaigns targeting an individual",
+        "Sharing personal information of others without consent (doxxing)",
+        "Sexual content involving minors in any form",
+        "Impersonating another person with intent to deceive or harm",
+        "Threats of physical violence against identifiable individuals",
+        "Promoting or facilitating human trafficking or exploitation",
       ]
     },
     {
-      emoji: "🔞", title: "Age-Restricted Content",
-      color: "#a78bfa",
+      level: "HIGH — Content Removal + Warning or Suspension",
+      color: "#facc15",
+      border: "#facc1540",
       items: [
-        "Sexually suggestive content is restricted to verified adult users",
-        "Content depicting alcohol or drug use must not target minors",
-        "Mature themes must be appropriately labeled",
-        "Users under 18 will not see age-restricted content"
+        "Hate speech targeting protected characteristics (race, religion, gender, sexual orientation, disability, national origin, ethnicity)",
+        "Glorification of self-harm, eating disorders, or suicide",
+        "Graphic violence presented approvingly or to intimidate",
+        "Spam, phishing, or fraudulent schemes",
+        "AI content deliberately mislabeled as human-created",
+        "Harassment, bullying, or sustained targeting of individuals",
       ]
     },
     {
-      emoji: "✅", title: "What's Always Welcome",
-      color: "#4ade80",
+      level: "MODERATE — Content Removal + Warning",
+      color: "#94a3b8",
+      border: "#94a3b840",
       items: [
-        "Authentic self-expression and creative content",
-        "Constructive discussions and healthy debate",
-        "Art, music, writing, photography, and other creative works",
-        "Community support, encouragement, and positive interactions",
-        "Educational content and sharing knowledge",
-        "Humor and satire that does not punch down at marginalized groups"
+        "Misinformation on topics of public safety presented as fact",
+        "Content promoting or selling illegal products or services",
+        "Excessive nudity or sexually suggestive content",
+        "Unauthorized commercial advertising or multi-level marketing spam",
+        "Copyright-infringing content after a valid DMCA notice",
+        "Repeated posting of low-quality spam or duplicate content",
       ]
-    }
+    },
+  ];
+
+  const enforcement = [
+    { action: "Warning", desc: "First violation of moderate rules. No content impact." },
+    { action: "Content Removal", desc: "Violating content is deleted. Account remains active." },
+    { action: "Temporary Suspension", desc: "1–30 days. Repeated or severe violations." },
+    { action: "Permanent Ban", desc: "Severe or repeat violations. Account deleted." },
+    { action: "Law Enforcement Report", desc: "CSAM, terrorism, and imminent threats to life." },
   ];
 
   return (
-    <div style={{
-      minHeight: "100vh",
-      background: "linear-gradient(135deg, #0d0d1a 0%, #1a0a2e 50%, #0d1a2e 100%)",
-      color: "#e2e8f0",
-      fontFamily: "'Segoe UI', sans-serif",
-      paddingBottom: "60px"
-    }}>
-      <div style={{
-        background: "rgba(139,92,246,0.15)",
-        borderBottom: "1px solid rgba(139,92,246,0.3)",
-        padding: "20px 24px",
-        display: "flex",
-        alignItems: "center",
-        gap: "12px",
-        position: "sticky",
-        top: 0,
-        backdropFilter: "blur(12px)",
-        zIndex: 100
-      }}>
-        <button onClick={() => window.history.back()} style={{ background: "none", border: "none", color: "#a78bfa", fontSize: "20px", cursor: "pointer", padding: "4px 8px" }}>←</button>
-        <div>
-          <div style={{ fontWeight: 700, fontSize: "18px", color: "#c084fc" }}>Community Guidelines</div>
-          <div style={{ fontSize: "12px", color: "#64748b" }}>OurSpace 2.0 · Content & Safety Policy</div>
+    <div style={{ minHeight: "100vh", background: "#0d0d1a", color: "#f0f0f0", fontFamily: "'Segoe UI', system-ui, sans-serif" }}>
+      {/* Hero */}
+      <div style={{ background: "linear-gradient(135deg,#0f0f2e,#1a0533)", padding: "48px 24px 36px", textAlign: "center", borderBottom: "1px solid #1e1e3a" }}>
+        <button onClick={() => navigate(-1)} style={{ display: "block", margin: "0 0 24px", background: "none", border: "none", color: "#94a3b8", fontSize: 14, cursor: "pointer" }}>← Back</button>
+        <div style={{ fontSize: 52, marginBottom: 16 }}>🛡️</div>
+        <h1 style={{ fontSize: 30, fontWeight: 900, margin: "0 0 8px", background: "linear-gradient(90deg,#c084fc,#22d3ee)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+          Community Guidelines & Content Policy
+        </h1>
+        <p style={{ color: "#64748b", fontSize: 13, margin: "0 0 20px" }}>Effective: {EFFECTIVE} · OurSpace 2.0</p>
+        <div style={{ display: "flex", justifyContent: "center", flexWrap: "wrap", gap: 8 }}>
+          {["🚫 Zero Tolerance CSAM","✅ NCMEC Reporting","⚖️ Tiered Enforcement","🔔 Appeals Process"].map(t => (
+            <span key={t} style={{ background: "#1e1e3a", border: "1px solid #2a2a45", borderRadius: 20, padding: "5px 12px", fontSize: 12, color: "#94a3b8" }}>{t}</span>
+          ))}
         </div>
       </div>
 
-      <div style={{ maxWidth: "800px", margin: "0 auto", padding: "32px 24px" }}>
+      <div style={{ maxWidth: 720, margin: "0 auto", padding: "32px 16px 60px" }}>
 
-        <div style={{ background: "rgba(139,92,246,0.1)", border: "1px solid rgba(139,92,246,0.3)", borderRadius: "16px", padding: "20px", marginBottom: "32px" }}>
-          <h1 style={{ color: "#c084fc", margin: "0 0 12px", fontSize: "22px" }}>Our Community, Our Rules</h1>
-          <p style={{ margin: 0, fontSize: "15px", lineHeight: "1.7", color: "#94a3b8" }}>
-            OurSpace 2.0 is built for authentic connection and creative expression. To keep this space safe, welcoming,
-            and positive for all members, everyone must follow these community guidelines. Violations are handled
-            by our moderation team — appeals can be submitted to <strong style={{ color: "#c084fc" }}>{APPEALS_EMAIL}</strong>.
+        {/* Intro */}
+        <div style={{ background: "#13132b", borderRadius: 16, border: "1px solid #2a2a45", padding: "20px 24px", marginBottom: 32 }}>
+          <p style={{ color: "#94a3b8", fontSize: 14, lineHeight: 1.8, margin: 0 }}>
+            OurSpace 2.0 is built on the belief that online spaces can be both free and safe. These guidelines apply to all content posted, shared, or transmitted on our platform. Violations are handled according to a tiered enforcement system designed to be proportionate and fair.
           </p>
         </div>
 
-        {rules.map((rule, idx) => (
-          <div key={idx} style={{ marginBottom: "28px", background: "rgba(255,255,255,0.03)", border: `1px solid ${rule.color}30`, borderRadius: "16px", overflow: "hidden" }}>
-            <div style={{ background: `${rule.color}15`, borderBottom: `1px solid ${rule.color}30`, padding: "16px 20px", display: "flex", alignItems: "center", gap: "10px" }}>
-              <span style={{ fontSize: "20px" }}>{rule.emoji}</span>
-              <h2 style={{ margin: 0, fontSize: "16px", fontWeight: 700, color: rule.color }}>{rule.title}</h2>
+        {/* Violation tiers */}
+        <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 20, color: "#f0f0f0" }}>Prohibited Content</h2>
+        {tiers.map((tier) => (
+          <div key={tier.level} style={{ background: "#13132b", borderRadius: 16, border: `1px solid ${tier.border}`, padding: "20px 24px", marginBottom: 16 }}>
+            <div style={{ color: tier.color, fontWeight: 700, fontSize: 13, marginBottom: 14, textTransform: "uppercase", letterSpacing: 0.5 }}>
+              ⚠️ {tier.level}
             </div>
-            <div style={{ padding: "16px 20px" }}>
-              {rule.items.map((item, i) => (
-                <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: "10px", padding: "8px 0", borderBottom: i < rule.items.length - 1 ? "1px solid rgba(255,255,255,0.05)" : "none" }}>
-                  <span style={{ color: rule.color, marginTop: "2px", flexShrink: 0 }}>•</span>
-                  <span style={{ fontSize: "14px", color: "#94a3b8", lineHeight: "1.6" }}>{item}</span>
-                </div>
-              ))}
-            </div>
+            <ul style={{ color: "#94a3b8", fontSize: 14, lineHeight: 2, paddingLeft: 20, margin: 0 }}>
+              {tier.items.map((item, i) => <li key={i}>{item}</li>)}
+            </ul>
           </div>
         ))}
 
         {/* Enforcement */}
-        <div style={{ marginBottom: "28px" }}>
-          <h2 style={{ color: "#c084fc", fontSize: "18px", fontWeight: 700, marginBottom: "16px", borderBottom: "1px solid rgba(139,92,246,0.2)", paddingBottom: "8px" }}>Enforcement</h2>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: "12px" }}>
-            {[
-              { step: "1st violation", action: "Warning issued", color: "#facc15" },
-              { step: "2nd violation", action: "Temporary suspension (7 days)", color: "#f97316" },
-              { step: "3rd violation", action: "Permanent account ban", color: "#ef4444" },
-              { step: "Zero tolerance", action: "Immediate permanent ban", color: "#7f1d1d" }
-            ].map((e, i) => (
-              <div key={i} style={{ background: `${e.color}10`, border: `1px solid ${e.color}30`, borderRadius: "12px", padding: "14px", textAlign: "center" }}>
-                <div style={{ fontSize: "12px", color: "#64748b", marginBottom: "6px" }}>{e.step}</div>
-                <div style={{ fontSize: "13px", fontWeight: 600, color: e.color }}>{e.action}</div>
-              </div>
-            ))}
-          </div>
+        <h2 style={{ fontSize: 18, fontWeight: 700, margin: "36px 0 16px", color: "#f0f0f0" }}>Enforcement Actions</h2>
+        <div style={{ background: "#13132b", borderRadius: 16, border: "1px solid #2a2a45", overflow: "hidden", marginBottom: 32 }}>
+          {enforcement.map((e, i) => (
+            <div key={e.action} style={{ padding: "14px 20px", borderBottom: i < enforcement.length - 1 ? "1px solid #1e1e3a" : "none", display: "flex", alignItems: "flex-start", gap: 16 }}>
+              <span style={{ fontWeight: 700, fontSize: 14, color: "#c084fc", minWidth: 160 }}>{e.action}</span>
+              <span style={{ color: "#94a3b8", fontSize: 14 }}>{e.desc}</span>
+            </div>
+          ))}
         </div>
 
-        {/* Reporting */}
-        <div style={{ background: "rgba(139,92,246,0.1)", border: "1px solid rgba(139,92,246,0.25)", borderRadius: "16px", padding: "20px" }}>
-          <h2 style={{ color: "#c084fc", margin: "0 0 12px", fontSize: "16px" }}>🚨 How to Report</h2>
-          <p style={{ fontSize: "14px", color: "#94a3b8", margin: "0 0 12px", lineHeight: "1.7" }}>
-            See something that violates our guidelines? Use the report button (⋯ menu on any post, comment, or profile)
-            or contact our team directly:
+        {/* AI Policy */}
+        <div style={{ background: "#1e1a2e", borderRadius: 16, border: "1px solid #c084fc30", padding: "20px 24px", marginBottom: 24 }}>
+          <h3 style={{ color: "#c084fc", fontSize: 15, fontWeight: 700, margin: "0 0 12px" }}>🤖 AI Transparency Policy</h3>
+          <p style={{ color: "#94a3b8", fontSize: 14, lineHeight: 1.8, margin: 0 }}>
+            OurSpace 2.0 requires that all AI-generated or AI-assisted content be clearly labeled using the "🤖 AI" tag. This includes images, text, audio, or video created in whole or in part by generative AI tools. Intentionally mislabeling AI content as human-created content is a violation subject to suspension or permanent ban. Our Human-Only Filter relies on this transparency to function accurately.
           </p>
-          <div style={{ fontSize: "14px", color: "#94a3b8", lineHeight: "2.2" }}>
-            <div>📧 <strong style={{ color: "#c084fc" }}>Safety reports:</strong> <a href={`mailto:${SAFETY_EMAIL}`} style={{ color: "#22d3ee" }}>{SAFETY_EMAIL}</a></div>
-            <div>⚖️ <strong style={{ color: "#c084fc" }}>Appeals:</strong> <a href={`mailto:${APPEALS_EMAIL}`} style={{ color: "#22d3ee" }}>{APPEALS_EMAIL}</a></div>
-            <div>🧒 <strong style={{ color: "#c084fc" }}>Child safety (NCMEC):</strong> <a href="https://cybertipline.org" style={{ color: "#22d3ee" }} target="_blank" rel="noopener noreferrer">cybertipline.org</a></div>
-          </div>
         </div>
 
+        {/* Child safety */}
+        <div style={{ background: "#1a0f00", borderRadius: 16, border: "1px solid #ef444430", padding: "20px 24px", marginBottom: 24 }}>
+          <h3 style={{ color: "#ef4444", fontSize: 15, fontWeight: 700, margin: "0 0 12px" }}>🚨 Child Safety (CSAM Zero Tolerance)</h3>
+          <p style={{ color: "#94a3b8", fontSize: 14, lineHeight: 1.8, margin: 0 }}>
+            Any content that sexually exploits minors is immediately removed, and the account is permanently banned without possibility of appeal. All CSAM is reported to the National Center for Missing & Exploited Children (NCMEC) CyberTipline at CyberTipline.org and to applicable law enforcement. OurSpace 2.0 uses hash-matching and user reporting to detect CSAM proactively. If you encounter this content, report it immediately to <strong>{SAFETY_EMAIL}</strong>.
+          </p>
+        </div>
+
+        {/* Reporting & Appeals */}
+        <div style={{ background: "#13132b", borderRadius: 16, border: "1px solid #2a2a45", padding: "20px 24px", marginBottom: 24 }}>
+          <h3 style={{ color: "#22d3ee", fontSize: 15, fontWeight: 700, margin: "0 0 12px" }}>📣 Reporting & Appeals</h3>
+          <p style={{ color: "#94a3b8", fontSize: 14, lineHeight: 1.8, margin: "0 0 12px" }}>
+            <strong style={{ color: "#f0f0f0" }}>To report content:</strong> Use the 🚩 Report button on any post, profile, or message, or email <a href={`mailto:${SAFETY_EMAIL}`} style={{ color: "#22d3ee" }}>{SAFETY_EMAIL}</a>.
+          </p>
+          <p style={{ color: "#94a3b8", fontSize: 14, lineHeight: 1.8, margin: "0 0 12px" }}>
+            <strong style={{ color: "#f0f0f0" }}>Review timeline:</strong> Reports are reviewed within 24 hours for high-severity content and 72 hours for standard reports.
+          </p>
+          <p style={{ color: "#94a3b8", fontSize: 14, lineHeight: 1.8, margin: 0 }}>
+            <strong style={{ color: "#f0f0f0" }}>To appeal a decision:</strong> Email <a href={`mailto:${APPEALS_EMAIL}`} style={{ color: "#c084fc" }}>{APPEALS_EMAIL}</a> with "Appeal" in the subject line, your account email, the content in question, and your reasoning. We respond to all appeals within 7 business days.
+          </p>
+        </div>
+
+        {/* Human-only filter */}
+        <div style={{ background: "#0f2a1e", borderRadius: 16, border: "1px solid #4ade8030", padding: "20px 24px", marginBottom: 32 }}>
+          <h3 style={{ color: "#4ade80", fontSize: 15, fontWeight: 700, margin: "0 0 12px" }}>✅ Human-Only Filter</h3>
+          <p style={{ color: "#94a3b8", fontSize: 14, lineHeight: 1.8, margin: 0 }}>
+            The Human-Only Filter allows users to view only content verified as human-created. This filter relies on creator self-disclosure and community reporting. Users who falsely label AI-generated content as human may be suspended or permanently banned.
+          </p>
+        </div>
+
+        {/* DMCA */}
+        <div style={{ background: "#13132b", borderRadius: 16, border: "1px solid #2a2a45", padding: "20px 24px", marginBottom: 32 }}>
+          <h3 style={{ color: "#f59e0b", fontSize: 15, fontWeight: 700, margin: "0 0 12px" }}>⚖️ DMCA / Copyright</h3>
+          <p style={{ color: "#94a3b8", fontSize: 14, lineHeight: 1.8, margin: 0 }}>
+            To file a DMCA takedown notice, email <a href={`mailto:${SAFETY_EMAIL}`} style={{ color: "#f59e0b" }}>{SAFETY_EMAIL}</a> with: your contact information, identification of the copyrighted work, URL of the infringing material, good-faith belief statement, and your electronic signature. We respond to valid DMCA notices within 5 business days.
+          </p>
+        </div>
+
+        <div style={{ textAlign: "center", color: "#475569", fontSize: 12, marginTop: 40 }}>
+          <p>© {new Date().getFullYear()} OurSpace 2.0 · All rights reserved</p>
+          <p>
+            <span style={{ color: "#c084fc", cursor: "pointer" }} onClick={() => navigate("/PrivacyPolicy")}>Privacy Policy</span>
+            {" · "}
+            <span style={{ color: "#22d3ee", cursor: "pointer" }} onClick={() => navigate("/TermsOfService")}>Terms of Service</span>
+          </p>
+        </div>
       </div>
     </div>
   );
