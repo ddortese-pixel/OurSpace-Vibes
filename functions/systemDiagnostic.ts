@@ -1,7 +1,7 @@
 import base44 from "../src/base44Client";
 
 const ADMIN_EMAIL = "ddortese@gmail.com";
-const APP_URL_OS2 = "https://legacy-circle.base44.app";
+const APP_URL_OS2 = "https://our-space-vibes.base44.app";
 const APP_URLS_TO_CHECK = [
   { name: "OurSpace 2.0 - Home", url: `${APP_URL_OS2}/Home`, app: "OurSpace 2.0" },
   { name: "OurSpace 2.0 - Discover", url: `${APP_URL_OS2}/Discover`, app: "OurSpace 2.0" },
