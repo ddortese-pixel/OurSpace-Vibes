@@ -1,19 +1,22 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Profile } from "../api/entities";
 
 const OS2_ICON = "https://media.base44.com/images/public/69d9b8416964fe31ae3f9932/7bbdaee82_generated_image.png";
 
 function injectGA(id) {
+  if (localStorage.getItem("os2_analyticsConsent") !== "true") return;
   if (document.getElementById(`ga-${id}`)) return;
   const s1 = document.createElement("script"); s1.id = `ga-${id}`; s1.async = true;
   s1.src = `https://www.googletagmanager.com/gtag/js?id=${id}`; document.head.appendChild(s1);
   const s2 = document.createElement("script");
-  s2.innerHTML = `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag("js",new Date());gtag("config","${id}");`;
+  s2.innerHTML = `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag("js",new Date());gtag("config","${id}",{"anonymize_ip":true});`;
   document.head.appendChild(s2);
 }
 
 export default function SplashScreen() {
-  const [phase, setPhase] = useState("in"); // in → hold → out
+  const [phase, setPhase] = useState("in");
+  const [memberCount, setMemberCount] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -22,6 +25,12 @@ export default function SplashScreen() {
     if (!link) { link = document.createElement("link"); link.rel = "icon"; document.head.appendChild(link); }
     link.href = OS2_ICON;
     document.title = "OurSpace 2.0";
+
+    // Fetch real member count from DB
+    Profile.list().then(profiles => {
+      setMemberCount(profiles.length);
+    }).catch(() => setMemberCount(0));
+
     const t1 = setTimeout(() => setPhase("hold"), 400);
     const t2 = setTimeout(() => setPhase("out"), 2800);
     const t3 = setTimeout(() => {
@@ -70,23 +79,23 @@ export default function SplashScreen() {
         transition: "opacity 0.5s 0.25s, transform 0.5s 0.25s",
       }}>Your Space. No Algorithms.</p>
 
-      {/* User count badge */}
-      <div style={{
-        display: "flex", alignItems: "center", gap: 8,
-        background: "rgba(192,132,252,0.12)", border: "1px solid rgba(192,132,252,0.25)",
-        borderRadius: 24, padding: "8px 18px",
-        opacity: phase === "in" ? 0 : 1,
-        transition: "opacity 0.5s 0.4s",
-      }}>
-        <div style={{ display: "flex" }}>
-          {["#f59e0b","#22d3ee","#c084fc","#4ade80"].map((c, i) => (
-            <div key={i} style={{ width: 20, height: 20, borderRadius: "50%", background: c, marginLeft: i === 0 ? 0 : -6, border: "2px solid #0d0d1a", fontSize: 9, display: "flex", alignItems: "center", justifyContent: "center", color: "#000", fontWeight: 700 }}>
-              {["J","M","S","A"][i]}
-            </div>
-          ))}
+      {/* Real member count badge — only shown when count is loaded */}
+      {memberCount !== null && (
+        <div style={{
+          display: "flex", alignItems: "center", gap: 8,
+          background: "rgba(192,132,252,0.12)", border: "1px solid rgba(192,132,252,0.25)",
+          borderRadius: 24, padding: "8px 18px",
+          opacity: phase === "in" ? 0 : 1,
+          transition: "opacity 0.5s 0.4s",
+        }}>
+          <div style={{ width: 10, height: 10, borderRadius: "50%", background: "#4ade80" }} />
+          <span style={{ color: "#c084fc", fontSize: 13, fontWeight: 700 }}>
+            {memberCount === 0
+              ? "Be the first to join 🌐"
+              : `${memberCount.toLocaleString()} member${memberCount === 1 ? "" : "s"} and growing`}
+          </span>
         </div>
-        <span style={{ color: "#c084fc", fontSize: 13, fontWeight: 700 }}>10,000+ members</span>
-      </div>
+      )}
 
       {/* Loading bar */}
       <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: 3, background: "#1e1e3a", overflow: "hidden" }}>
