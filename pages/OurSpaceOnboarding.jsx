@@ -1,15 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Profile } from "../api/entities";
 import { useNavigate } from "react-router-dom";
-
-const FEATURES = [
-  { icon:"📰", title:"The Underground Feed",    desc:"Chronological only. Zero algorithm manipulation." },
-  { icon:"🎨", title:"Your Digital Mirror",      desc:"Fully customizable profile — themes, music, mood." },
-  { icon:"🔒", title:"The Shield (Private DMs)",        desc:"Private messages visible only to you and the recipient." },
-  { icon:"✅", title:"Human-Only Filter",        desc:"Toggle to see only verified human-created content." },
-  { icon:"📌", title:"The Guestbook Wall",       desc:"Let friends leave messages on your profile." },
-  { icon:"👥", title:"10,000+ Members",          desc:"Real humans. No bots, no fake accounts." },
-];
 
 const VIBES = [
   { id:"purple-pink", label:"💜 Dark Purple", bg:"linear-gradient(135deg,#c084fc,#ec4899)" },
@@ -30,7 +21,35 @@ export default function OurSpaceOnboarding() {
   const [email,         setEmail]         = useState("");
   const [nameError,     setNameError]     = useState("");
   const [creating,      setCreating]      = useState(false);
+  const [memberCount,   setMemberCount]   = useState(null);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    Profile.list().then(profiles => {
+      setMemberCount(profiles.length);
+    }).catch(() => setMemberCount(null));
+  }, []);
+
+  const memberLabel = memberCount === null
+    ? "A growing community · Zero bots · Zero algorithm"
+    : memberCount === 0
+      ? "Be one of the first · Zero bots · Zero algorithm"
+      : `${memberCount.toLocaleString()} real human${memberCount !== 1 ? "s" : ""} · Zero bots · Zero algorithm`;
+
+  const memberFeatureTitle = memberCount === null
+    ? "Growing Community"
+    : memberCount === 0
+      ? "Be One of the First"
+      : `${memberCount.toLocaleString()}+ Members`;
+
+  const FEATURES = [
+    { icon:"📰", title:"The Underground Feed",    desc:"Chronological only. Zero algorithm manipulation." },
+    { icon:"🎨", title:"Your Digital Mirror",      desc:"Fully customizable profile — themes, music, mood." },
+    { icon:"🔒", title:"The Shield (Private DMs)", desc:"Private messages visible only to you and the recipient." },
+    { icon:"✅", title:"Human-Only Filter",        desc:"Toggle to see only verified human-created content." },
+    { icon:"📌", title:"The Guestbook Wall",       desc:"Let friends leave messages on your profile." },
+    { icon:"👥", title: memberFeatureTitle,        desc:"Real humans. No bots, no fake accounts." },
+  ];
 
   const checkAge = () => {
     const n = parseInt(age);
@@ -43,8 +62,7 @@ export default function OurSpaceOnboarding() {
   const checkParent = async () => {
     if (!parentEmail.includes("@")) { setAgeError("Enter a valid parent/guardian email."); return; }
     if (!parentConsent)              { setAgeError("Parent/guardian must agree to Terms of Service."); return; }
-    setAgeError("Sending verification email to parent/guardian..."); 
-    // Will send verification email after account is created
+    setAgeError("Sending verification email to parent/guardian...");
     setAgeError(""); setStep(1);
   };
 
@@ -55,11 +73,9 @@ export default function OurSpaceOnboarding() {
     try {
       const userEmail = email.trim().toLowerCase();
       const userAge = parseInt(age);
-      // Save to localStorage
       localStorage.setItem("os2_email", userEmail);
       localStorage.setItem("os2_name",  name.trim());
       localStorage.setItem("os2_vibe",  vibe);
-      // Create profile record (pending if under 18)
       const isPendingConsent = needsParent && parentEmail;
       await Profile.create({
         user_email: userEmail,
@@ -70,7 +86,6 @@ export default function OurSpaceOnboarding() {
         privacy_level: "public",
         mood: isPendingConsent ? "PENDING_CONSENT" : "",
       }).catch(()=>{});
-      // If under 18, fire COPPA parent verification email
       if (isPendingConsent) {
         try {
           await fetch("https://legacy-circle-ae3f9932.base44.app/functions/sendParentVerification", {
@@ -86,7 +101,7 @@ export default function OurSpaceOnboarding() {
           setNameError("");
         } catch(e) { console.warn("Parent verification email failed:", e); }
       }
-      setStep(4); // welcome step
+      setStep(4);
     } catch(e) { console.error(e); }
     setCreating(false);
   };
@@ -115,7 +130,7 @@ export default function OurSpaceOnboarding() {
             <div style={{ fontSize:64,marginBottom:16 }}>🌐</div>
             <h1 style={{ fontSize:28,fontWeight:900,margin:"0 0 8px",background:"linear-gradient(90deg,#c084fc,#22d3ee)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent" }}>OurSpace 2.0</h1>
             <p style={{ color:"#64748b",margin:0 }}>Your Space. Your Rules. No Algorithms.</p>
-            <p style={{ color:"#475569",fontSize:13,margin:"8px 0 0" }}>10,000+ real humans · Zero bots · Zero algorithm</p>
+            <p style={{ color:"#475569",fontSize:13,margin:"8px 0 0" }}>{memberLabel}</p>
           </div>
           {!needsParent ? (
             <div>
@@ -177,60 +192,59 @@ export default function OurSpaceOnboarding() {
         <div>
           <div style={{ textAlign:"center",marginBottom:24 }}>
             <div style={{ fontSize:48,marginBottom:12 }}>🎨</div>
-            <h2 style={{ fontSize:22,fontWeight:900,margin:"0 0 6px" }}>Choose your theme</h2>
-            <p style={{ color:"#64748b",fontSize:14,margin:0 }}>You can change this anytime in your profile.</p>
+            <h2 style={{ fontSize:22,fontWeight:900,margin:"0 0 6px" }}>Pick your vibe</h2>
+            <p style={{ color:"#64748b",fontSize:14,margin:0 }}>You can change this anytime in settings.</p>
           </div>
-          <div style={{ display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:24 }}>
+          <div style={{ display:"flex",flexDirection:"column",gap:10,marginBottom:24 }}>
             {VIBES.map(v=>(
-              <button key={v.id} onClick={()=>setVibe(v.id)}
-                style={{ padding:"20px 12px",background:vibe===v.id?"#2a1a3e":"#16162a",border:`2px solid ${vibe===v.id?"#c084fc":"#2a2a45"}`,borderRadius:14,cursor:"pointer",color:"#f0f0f0",fontWeight:vibe===v.id?700:500,fontSize:14,position:"relative" }}>
-                <div style={{ width:"100%",height:6,borderRadius:3,background:v.bg,marginBottom:8 }} />
+              <div key={v.id} onClick={()=>setVibe(v.id)} style={{ borderRadius:12,padding:"14px 18px",background:vibe===v.id?v.bg:"#16162a",border:vibe===v.id?"2px solid transparent":"2px solid #2a2a45",cursor:"pointer",fontWeight:700,fontSize:15,color:vibe===v.id?"#000":"#f0f0f0",transition:"all 0.2s" }}>
                 {v.label}
-                {vibe===v.id&&<span style={{ position:"absolute",top:8,right:10,color:"#c084fc",fontSize:14 }}>✓</span>}
-              </button>
+              </div>
             ))}
           </div>
-          <Btn onClick={()=>setStep(3)}>Create My Account →</Btn>
+          <Btn onClick={()=>setStep(3)}>Almost There →</Btn>
         </div>
       )}
 
-      {/* ── STEP 3: Create Account ── */}
+      {/* ── STEP 3: Create account ── */}
       {step===3&&(
         <div>
           <div style={{ textAlign:"center",marginBottom:24 }}>
-            <div style={{ fontSize:48,marginBottom:12 }}>👤</div>
-            <h2 style={{ fontSize:22,fontWeight:900,margin:"0 0 6px" }}>Claim your space</h2>
-            <p style={{ color:"#64748b",fontSize:14,margin:0 }}>This is how you'll appear to other users.</p>
+            <div style={{ fontSize:48,marginBottom:12 }}>🚀</div>
+            <h2 style={{ fontSize:22,fontWeight:900,margin:"0 0 6px" }}>Create your space</h2>
+            <p style={{ color:"#64748b",fontSize:14,margin:0 }}>This is how people will find you.</p>
           </div>
-          <div style={{ marginBottom:14 }}>
-            <label style={{ color:"#94a3b8",fontSize:13,display:"block",marginBottom:6 }}>Display Name</label>
-            <Input value={name} onChange={e=>{setName(e.target.value);setNameError("");}} placeholder="What should we call you?" />
+          <div style={{ display:"flex",flexDirection:"column",gap:12,marginBottom:8 }}>
+            <div>
+              <label style={{ color:"#94a3b8",fontSize:13,display:"block",marginBottom:6 }}>Display Name</label>
+              <Input value={name} onChange={e=>{setName(e.target.value);setNameError("");}} placeholder="How you want to be known" />
+            </div>
+            <div>
+              <label style={{ color:"#94a3b8",fontSize:13,display:"block",marginBottom:6 }}>Email Address</label>
+              <Input type="email" value={email} onChange={e=>{setEmail(e.target.value);setNameError("");}} placeholder="your@email.com" />
+            </div>
           </div>
-          <div style={{ marginBottom:14 }}>
-            <label style={{ color:"#94a3b8",fontSize:13,display:"block",marginBottom:6 }}>Email Address</label>
-            <Input type="email" value={email} onChange={e=>{setEmail(e.target.value);setNameError("");}} placeholder="your@email.com" />
-          </div>
-          {nameError&&<div style={{ padding:12,background:"#2a1515",borderRadius:8,color:"#f87171",fontSize:13,marginBottom:8 }}>{nameError}</div>}
-          <Btn onClick={createAccount} disabled={creating}>{creating?"Creating your space...":"Enter OurSpace 🌐"}</Btn>
-          <div style={{ textAlign:"center",marginTop:14,fontSize:12,color:"#64748b" }}>
-            Your data is yours. We never sell it. <span style={{ color:"#c084fc",cursor:"pointer" }} onClick={()=>navigate("/PrivacyPolicy")}>Privacy Policy</span>
-          </div>
+          {nameError&&<div style={{ marginTop:8,padding:12,background:"#2a1515",borderRadius:8,color:"#f87171",fontSize:13 }}>{nameError}</div>}
+          <Btn onClick={createAccount} disabled={creating}>{creating?"Creating your space...":"Join OurSpace 2.0 →"}</Btn>
         </div>
       )}
 
       {/* ── STEP 4: Welcome ── */}
       {step===4&&(
         <div style={{ textAlign:"center" }}>
-          <div style={{ fontSize:72,marginBottom:16 }}>🌐</div>
-          <h1 style={{ fontSize:28,fontWeight:900,margin:"0 0 8px",background:"linear-gradient(90deg,#c084fc,#22d3ee)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent" }}>Welcome to OurSpace!</h1>
-          <p style={{ color:"#94a3b8",fontSize:15,lineHeight:1.7,marginBottom:8 }}>
-            Hey <strong style={{ color:"#f0f0f0" }}>{name}</strong>! You're now part of a community of 10,000+ real humans.
+          <div style={{ fontSize:80,marginBottom:16 }}>🎉</div>
+          <h2 style={{ fontSize:26,fontWeight:900,margin:"0 0 12px",background:"linear-gradient(90deg,#c084fc,#22d3ee)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent" }}>
+            Welcome to OurSpace!
+          </h2>
+          <p style={{ color:"#94a3b8",fontSize:15,lineHeight:1.6,marginBottom:8 }}>
+            Hey <strong style={{ color:"#f0f0f0" }}>{name}</strong>! You're now part of a community of real humans — no bots, no algorithms, just people being people.
           </p>
-          <p style={{ color:"#64748b",fontSize:13,marginBottom:28 }}>No algorithm. No manipulation. Just your people.</p>
-          <div style={{ display:"flex",flexDirection:"column",gap:10 }}>
-            <Btn onClick={finish} style={{ marginTop:0 }}>Go to My Feed 🏠</Btn>
-            <button onClick={()=>navigate("/MyProfile")} style={{ width:"100%",padding:"12px",background:"#16162a",border:"1px solid #2a2a45",borderRadius:12,color:"#c084fc",fontWeight:700,fontSize:15,cursor:"pointer" }}>Set Up My Profile ✏️</button>
-          </div>
+          {needsParent && (
+            <div style={{ margin:"16px 0",padding:14,background:"#1e1a2e",borderRadius:12,border:"1px solid #c084fc30",color:"#c084fc",fontSize:14 }}>
+              📧 A verification email has been sent to your parent/guardian. Your account will be fully active once they approve.
+            </div>
+          )}
+          <Btn onClick={finish}>Enter OurSpace →</Btn>
         </div>
       )}
     </div>
