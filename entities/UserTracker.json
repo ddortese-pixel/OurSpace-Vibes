@@ -1,0 +1,44 @@
+{
+  "type": "object",
+  "properties": {
+    "date": {
+      "type": "string"
+    },
+    "platform": {
+      "type": "string",
+      "enum": [
+        "The Legacy Circle",
+        "OurSpace 2.0"
+      ]
+    },
+    "new_users": {
+      "type": "number"
+    },
+    "total_users": {
+      "type": "number"
+    },
+    "sessions": {
+      "type": "number"
+    },
+    "page_views": {
+      "type": "number"
+    },
+    "source": {
+      "type": "string",
+      "enum": [
+        "Facebook",
+        "Reddit",
+        "NextDoor",
+        "LinkedIn",
+        "Direct",
+        "Email",
+        "Other"
+      ]
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "required": [],
+  "name": "UserTracker"
+}
