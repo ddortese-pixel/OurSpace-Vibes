@@ -1,0 +1,132 @@
+# OurSpace 2.0 — AWS Infrastructure (CloudFormation)
+# Provisions: DynamoDB NotificationLedger + GSI, Secrets Manager, IAM Role for Lambda
+
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "OurSpace 2.0 — Core AWS Infrastructure"
+
+Parameters:
+  Environment:
+    Type: String
+    Default: production
+    AllowedValues: [production, staging, dev]
+
+Resources:
+
+  # ── DynamoDB: NotificationLedger ──────────────────────────────────────────
+  NotificationLedger:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub "OurSpace_NotificationLedger_${Environment}"
+      BillingMode: PAY_PER_REQUEST
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+      SSESpecification:
+        SSEEnabled: true
+      AttributeDefinitions:
+        - AttributeName: callId
+          AttributeType: S
+        - AttributeName: recipientEmail
+          AttributeType: S
+        - AttributeName: timestamp
+          AttributeType: N
+      KeySchema:
+        - AttributeName: callId
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: recipientEmail-timestamp-index
+          KeySchema:
+            - AttributeName: recipientEmail
+              KeyType: HASH
+            - AttributeName: timestamp
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+      TimeToLiveSpecification:
+        AttributeName: ttl
+        Enabled: true  # Auto-purge stale records after 30 days
+      Tags:
+        - Key: App
+          Value: OurSpace2
+        - Key: Compliance
+          Value: FCC-IVoIP
+
+  # ── DynamoDB: Users Table ─────────────────────────────────────────────────
+  UsersTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub "OurSpace_Users_${Environment}"
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: email
+          AttributeType: S
+      KeySchema:
+        - AttributeName: email
+          KeyType: HASH
+      SSESpecification:
+        SSEEnabled: true
+
+  # ── Secrets Manager: VAPID Keys ──────────────────────────────────────────
+  VapidKeysSecret:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      Name: ourspace/vapid-keys
+      Description: "VAPID public/private keys for OurSpace 2.0 push notifications"
+      # Populate manually after stack creation:
+      # aws secretsmanager put-secret-value --secret-id ourspace/vapid-keys \
+      #   --secret-string '{"publicKey":"YOUR_PUBLIC_KEY","privateKey":"YOUR_PRIVATE_KEY"}'
+      Tags:
+        - Key: App
+          Value: OurSpace2
+
+  # ── IAM Role: Lambda Execution ────────────────────────────────────────────
+  LambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub "OurSpace-Lambda-Role-${Environment}"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: OurSpaceLambdaPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              # Secrets Manager: VAPID keys
+              - Effect: Allow
+                Action:
+                  - secretsmanager:GetSecretValue
+                Resource: !Ref VapidKeysSecret
+              # DynamoDB: NotificationLedger
+              - Effect: Allow
+                Action:
+                  - dynamodb:PutItem
+                  - dynamodb:GetItem
+                  - dynamodb:UpdateItem
+                  - dynamodb:Query
+                Resource:
+                  - !GetAtt NotificationLedger.Arn
+                  - !Sub "${NotificationLedger.Arn}/index/*"
+                  - !GetAtt UsersTable.Arn
+              # CloudWatch Logs
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: "arn:aws:logs:*:*:*"
+
+Outputs:
+  NotificationLedgerArn:
+    Value: !GetAtt NotificationLedger.Arn
+    Export:
+      Name: OurSpace-NotificationLedger-Arn
+  LambdaRoleArn:
+    Value: !GetAtt LambdaExecutionRole.Arn
+    Export:
+      Name: OurSpace-Lambda-Role-Arn
