@@ -1,0 +1,35 @@
+
+✅ Pushed to ddortese-pixel/OurSpace-Vibes:
+
+ourspace-aws/service-worker.js — push token auto-recovery + cache-busting
+ourspace-aws/push-token-manager.js — Digital Mirror repair function
+ourspace-aws/lambda-initiate-call.js — initiateCall with ledger + retry + age gate
+ourspace-aws/webrtc-ice-config.js — ICE/TURN config + ICE state monitor
+ourspace-aws/age-gate.js — ASA age gate + report call feature
+ourspace-aws/manifest.json — updated PWA manifest (no Base44 refs)
+ourspace-aws/privacy-stun-turn-disclosure.md — STUN/TURN privacy policy snippet
+ourspace-aws/aws-infrastructure.yml — CloudFormation (DynamoDB + IAM + Secrets)
+⚠️ One manual step — add the GitHub Actions workflow:
+
+Go to your repo → ddortese-pixel/OurSpace-Vibes
+Click Add file → Create new file
+Name it: .github/workflows/ourspace-deploy.yml
+Paste the workflow — I'll email it to you OR you can copy it from the file I have here
+Final AWS checklist before going live:
+
+ Run aws cloudformation deploy with ourspace-aws/aws-infrastructure.yml
+ Add VAPID keys to Secrets Manager: ourspace/vapid-keys
+ Add GitHub Secrets: AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, CLOUDFRONT_DISTRIBUTION_ID, S3_BUCKET_NAME, VAPID_PUBLIC_KEY, LAMBDA_ROLE_ARN
+ Deploy Lambda function OurSpace-initiateCall in AWS Console
+Want me to email you the full GitHub Actions workflow file so you can paste it directly?
+
+01:53 pm
+
+
+Copy
+
+
+Type a message...
+
+
+What should I read n
