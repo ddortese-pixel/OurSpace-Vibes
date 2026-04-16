@@ -1,0 +1,180 @@
+name: OurSpace 2.0 — Full Deploy Pipeline
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  AWS_REGION: us-east-1
+  CLOUDFRONT_DISTRIBUTION_ID: ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }}
+
+jobs:
+  # ── Step 1: Brand Audit — scrub any "Base44" references ─────────────────────
+  brand-audit:
+    name: 🔍 Brand Audit (Scrub Base44 References)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Search for Base44 references
+        id: audit
+        run: |
+          COUNT=$(grep -r "base44\|Base44\|BASE44" --include="*.js" --include="*.jsx" --include="*.ts" --include="*.tsx" --include="*.json" --include="*.html" . | grep -v node_modules | grep -v ".git" | wc -l)
+          echo "found=$COUNT" >> $GITHUB_OUTPUT
+          if [ "$COUNT" -gt "0" ]; then
+            echo "⚠️ Found $COUNT Base44 references:"
+            grep -r "base44\|Base44\|BASE44" --include="*.js" --include="*.jsx" --include="*.ts" --include="*.tsx" --include="*.json" --include="*.html" . | grep -v node_modules | grep -v ".git"
+          else
+            echo "✅ No Base44 references found."
+          fi
+
+      - name: Replace Base44 in API headers (auto-fix)
+        run: |
+          find . -type f \( -name "*.js" -o -name "*.jsx" -o -name "*.ts" -o -name "*.tsx" \) \
+            -not -path "*/node_modules/*" \
+            -not -path "*/.git/*" \
+            -exec sed -i 's/base44\.app/our-space-vibes.base44.app/g; s/X-Base44-/X-OurSpace-/g' {} +
+          echo "✅ Auto-fix complete."
+
+  # ── Step 2: Build & Cache-Bust ──────────────────────────────────────────────
+  build:
+    name: 🔨 Build & Cache-Bust Service Worker
+    runs-on: ubuntu-latest
+    needs: brand-audit
+    outputs:
+      cache_version: ${{ steps.version.outputs.cache_version }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Auto-increment Service Worker cache version
+        id: version
+        run: |
+          BUILD_NUM=${{ github.run_number }}
+          VERSION="ourspace-v2.0.${BUILD_NUM}"
+          echo "cache_version=$VERSION" >> $GITHUB_OUTPUT
+          echo "New cache version: $VERSION"
+          # Inject into service worker
+          sed -i "s/const CACHE_NAME = .*/const CACHE_NAME = \"${VERSION}\";/" public/service-worker.js || true
+          echo "✅ Cache version set to $VERSION"
+
+      - name: Inject VAPID public key from secrets
+        run: |
+          sed -i "s|process.env.REACT_APP_VAPID_PUBLIC_KEY|\"${{ secrets.VAPID_PUBLIC_KEY }}\"|g" public/service-worker.js || true
+
+      - name: Build
+        run: npm run build
+        env:
+          REACT_APP_VAPID_PUBLIC_KEY: ${{ secrets.VAPID_PUBLIC_KEY }}
+          REACT_APP_TURN_USERNAME: ${{ secrets.TURN_USERNAME }}
+          REACT_APP_TURN_CREDENTIAL: ${{ secrets.TURN_CREDENTIAL }}
+          REACT_APP_API_BASE: https://api.ourspace.com
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ourspace-build
+          path: build/
+
+  # ── Step 3: Deploy to AWS S3 + CloudFront ───────────────────────────────────
+  deploy:
+    name: 🚀 Deploy to AWS + Purge CloudFront
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ourspace-build
+          path: build/
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Sync to S3
+        run: |
+          aws s3 sync build/ s3://${{ secrets.S3_BUCKET_NAME }} \
+            --delete \
+            --cache-control "public,max-age=31536000,immutable" \
+            --exclude "*.html" \
+            --exclude "service-worker.js" \
+            --exclude "manifest.json"
+          # HTML + SW + manifest: no-cache so updates are instant
+          aws s3 sync build/ s3://${{ secrets.S3_BUCKET_NAME }} \
+            --delete \
+            --cache-control "no-cache,no-store,must-revalidate" \
+            --include "*.html" \
+            --include "service-worker.js" \
+            --include "manifest.json"
+
+      - name: Purge CloudFront edge cache
+        run: |
+          aws cloudfront create-invalidation \
+            --distribution-id ${{ env.CLOUDFRONT_DISTRIBUTION_ID }} \
+            --paths "/*"
+          echo "✅ CloudFront cache purged — cache version: ${{ needs.build.outputs.cache_version }}"
+
+  # ── Step 4: Deploy Lambda (initiateCall) ─────────────────────────────────────
+  deploy-lambda:
+    name: ⚡ Deploy Lambda — initiateCall
+    runs-on: ubuntu-latest
+    needs: deploy
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Package Lambda
+        run: |
+          cd ourspace-aws
+          npm install --production 2>/dev/null || true
+          zip -r ../lambda-initiate-call.zip lambda-initiate-call.js node_modules/ 2>/dev/null || zip ../lambda-initiate-call.zip lambda-initiate-call.js
+
+      - name: Deploy Lambda function
+        run: |
+          aws lambda update-function-code \
+            --function-name OurSpace-initiateCall \
+            --zip-file fileb://lambda-initiate-call.zip \
+            --region ${{ env.AWS_REGION }} || \
+          aws lambda create-function \
+            --function-name OurSpace-initiateCall \
+            --runtime nodejs20.x \
+            --role ${{ secrets.LAMBDA_ROLE_ARN }} \
+            --handler lambda-initiate-call.handler \
+            --zip-file fileb://lambda-initiate-call.zip \
+            --region ${{ env.AWS_REGION }}
+          echo "✅ Lambda deployed."
+
+  # ── Step 5: Smoke Test ────────────────────────────────────────────────────────
+  smoke-test:
+    name: 🔥 Smoke Test — Live URL
+    runs-on: ubuntu-latest
+    needs: deploy
+    steps:
+      - name: Ping OurSpace 2.0
+        run: |
+          sleep 15
+          STATUS=$(curl -o /dev/null -s -w "%{http_code}" https://our-space-vibes.base44.app)
+          echo "HTTP status: $STATUS"
+          if [ "$STATUS" != "200" ]; then echo "❌ OurSpace returned $STATUS"; exit 1; fi
+          echo "✅ OurSpace 2.0 is live — deploy successful."
