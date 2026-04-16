@@ -1,0 +1,46 @@
+{
+  "name": "OurSpace 2.0",
+  "short_name": "OurSpace",
+  "description": "A community social platform built for real connection — Indianapolis and beyond.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0d0d1a",
+  "theme_color": "#c084fc",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "id": "com.ourspace2.app",
+  "icons": [
+    { "src": "/icon-72.png",  "sizes": "72x72",   "type": "image/png", "purpose": "any maskable" },
+    { "src": "/icon-96.png",  "sizes": "96x96",   "type": "image/png", "purpose": "any maskable" },
+    { "src": "/icon-128.png", "sizes": "128x128", "type": "image/png", "purpose": "any maskable" },
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshot-mobile.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "OurSpace 2.0 Feed"
+    }
+  ],
+  "categories": ["social", "communication"],
+  "iarc_rating_id": "",
+  "related_applications": [
+    { "platform": "play", "url": "https://play.google.com/store/apps/details?id=com.ourspace2.app" },
+    { "platform": "itunes", "url": "https://apps.apple.com/app/ourspace-2/id0000000000" }
+  ],
+  "prefer_related_applications": false,
+  "share_target": {
+    "action": "/share",
+    "method": "POST",
+    "enctype": "multipart/form-data",
+    "params": {
+      "title": "title",
+      "text": "text",
+      "url": "url",
+      "files": [{ "name": "media", "accept": ["image/*", "video/*"] }]
+    }
+  }
+}
